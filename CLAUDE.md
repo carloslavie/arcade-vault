@@ -10,19 +10,15 @@ Arcade Vault: an online platform to play games and compete for the highest score
 
 Development follows **Spec Driven Design** using the `/spec` and `/spec-impl` skills from https://github.com/Klerith/fernando-skills (install with `npx skills@latest add Klerith/fernando-skills`). Write or update a spec before implementing a feature. The README is in Spanish.
 
-## Commands
-
-- `npm run dev`: dev server at http://localhost:3000 (it also rewrites `AGENTS.md`)
-- `npm run build`: production build (also type-checks)
-- `npm run start`: serve the production build
-- `npm run lint`: ESLint (flat config in `eslint.config.mjs`, using `eslint-config-next` core-web-vitals + typescript)
-- `npx tsc --noEmit`: type-check only
-
 No test framework is set up yet.
 
 ## Stack and conventions
 
 - **Next.js 16.3 (App Router, `app/` dir) + React 19.2.** APIs differ from older Next.js. Check `node_modules/next/dist/docs/` (`01-app/`, `03-architecture/`, `index.md`) before using any Next API. For example, route-typed globals like `LayoutProps<"/">` are used instead of hand-written prop types.
-- **Tailwind CSS v4** via `@tailwindcss/postcss`. There is no `tailwind.config.*`: theme tokens live in `app/globals.css` under `@theme inline`, mapped from CSS variables on `:root`. Dark mode uses `prefers-color-scheme`.
-- Fonts: Geist / Geist Mono via `next/font/google`, exposed as `--font-geist-sans` / `--font-geist-mono`.
+- **Tailwind CSS v4** via `@tailwindcss/postcss`. There is no `tailwind.config.*`. `app/globals.css` is the global theme, ported 1:1 from `references/templates/styles.css` (dark-only retro neon, no light mode). Tailwind is imported **without preflight** (only `theme.css` + `utilities.css`) so the original look is preserved; theme classes (`.btn`, `.card`, `.av-*`...) live in `@layer components` and CSS vars (`--bg`, `--cyan`, `--pixel`...) on `:root`, also exposed as Tailwind tokens under `@theme inline` (`text-cyan`, `bg-bg-2`, `font-pixel`...).
+- Fonts: Press Start 2P, JetBrains Mono and Courier Prime via `next/font/google` in `app/layout.tsx`, consumed through `--pixel` / `--mono`. The layout renders `.av-bg`, `.av-noise` and `#root` like the reference HTML.
 - TypeScript strict mode. Import alias `@/*` maps to the repo root.
+
+## Slills
+Usa siempre /frontend-design para diseñar la interfaz del usuario.
+
