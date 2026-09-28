@@ -1,12 +1,15 @@
+import { Library } from "@/components/library";
+
 export default function Home() {
   return (
-    <main className="av-main">
+    <div className="fade-in">
       <section className="av-hero">
-        <h1>ARCADE VAULT</h1>
-        <p className="sub">
-          INSERT COIN <span className="blink">▮</span>
-        </p>
+        <h1 className="flicker">ARCADE VAULT</h1>
+        <div className="sub">
+          INSERTA UNA MONEDA PARA JUGAR <span className="blink">_</span>
+        </div>
       </section>
-    </main>
+      <Library />
+    </div>
   );
 }
