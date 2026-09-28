@@ -1,6 +1,6 @@
 # SPEC 02 — Landing en `/` y Biblioteca en `/games`
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01
 > **Fecha:** 2026-09-28
 > **Objetivo:** Mover la Biblioteca de `/` a `/games` y portar 1:1 en `/` la landing de `references/templates/home-about/`, sin la página "Acerca de".
@@ -118,28 +118,28 @@ Convenciones:
 
 ## Criterios de aceptación
 
-- [ ] `npm run build` termina sin errores ni warnings de tipos.
-- [ ] `npm run lint` termina sin errores.
-- [ ] La consola del navegador no muestra errores de hidratación en `/`, `/games` y `/login?mode=register`.
-- [ ] `/` muestra, en orden: hero, // 01, // 02, stats, // 03, // 04 y CTA final.
-- [ ] El hero muestra las 8 siluetas flotando y el indicador "DESLIZA ▼".
-- [ ] La mini-rail muestra exactamente los 6 primeros juegos de `GAMES`.
-- [ ] Hacer clic en una mini-card abre `/games/<id>` de ese juego.
-- [ ] "EXPLORAR JUEGOS", "VER TODOS LOS JUEGOS →" e "INSERTAR MONEDA →" llevan a `/games`.
-- [ ] "CREAR CUENTA" y "EMPEZAR GRATIS →" abren `/login` con la tab CREAR CUENTA activa y el campo de correo visible.
-- [ ] `/login` sin parámetros abre con INICIAR SESIÓN activa.
-- [ ] "VER SALÓN →" lleva a `/hall-of-fame`.
-- [ ] Las secciones con `.reveal` aparecen con fundido al entrar en pantalla y quedan visibles al volver a subir.
-- [ ] Con `prefers-reduced-motion: reduce` emulado, todas las secciones son visibles sin hacer scroll ni animación.
-- [ ] `/games` muestra la Biblioteca con los 8 juegos, la búsqueda y los chips igual que antes en `/`.
-- [ ] El Nav muestra Inicio · Biblioteca · Salón de la Fama · Acerca de, en desktop y en el panel móvil.
-- [ ] Inicio está activo solo en `/`. Biblioteca está activa en `/games`, `/games/caida` y `/games/caida/play`.
-- [ ] "Acerca de" se ve atenuado, muestra cursor `not-allowed` y al hacer clic la URL no cambia.
-- [ ] "VOLVER AL VAULT" del Detalle y del modal del Reproductor llevan a `/games`.
-- [ ] "VOLVER A LA BIBLIOTECA" del Salón lleva a `/games`.
-- [ ] Enviar el login y pulsar "JUGAR COMO INVITADO" redirigen a `/games`.
-- [ ] Ningún `<Link>` de la landing muestra subrayado ni color de enlace por defecto.
-- [ ] A 390 px de ancho, `/` no tiene scroll horizontal y feature-grid, mini-rail, stats, actividad y precios se apilan según los media queries de la referencia.
+- [x] `npm run build` termina sin errores ni warnings de tipos.
+- [x] `npm run lint` termina sin errores.
+- [x] La consola del navegador no muestra errores de hidratación en `/`, `/games` y `/login?mode=register`.
+- [x] `/` muestra, en orden: hero, // 01, // 02, stats, // 03, // 04 y CTA final.
+- [x] El hero muestra las 8 siluetas flotando y el indicador "DESLIZA ▼".
+- [x] La mini-rail muestra exactamente los 6 primeros juegos de `GAMES`.
+- [x] Hacer clic en una mini-card abre `/games/<id>` de ese juego.
+- [x] "EXPLORAR JUEGOS", "VER TODOS LOS JUEGOS →" e "INSERTAR MONEDA →" llevan a `/games`.
+- [x] "CREAR CUENTA" y "EMPEZAR GRATIS →" abren `/login` con la tab CREAR CUENTA activa y el campo de correo visible.
+- [x] `/login` sin parámetros abre con INICIAR SESIÓN activa.
+- [x] "VER SALÓN →" lleva a `/hall-of-fame`.
+- [x] Las secciones con `.reveal` aparecen con fundido al entrar en pantalla y quedan visibles al volver a subir.
+- [x] Con `prefers-reduced-motion: reduce` emulado, todas las secciones son visibles sin hacer scroll ni animación.
+- [x] `/games` muestra la Biblioteca con los 8 juegos, la búsqueda y los chips igual que antes en `/`.
+- [x] El Nav muestra Inicio · Biblioteca · Salón de la Fama · Acerca de, en desktop y en el panel móvil.
+- [x] Inicio está activo solo en `/`. Biblioteca está activa en `/games`, `/games/caida` y `/games/caida/play`.
+- [x] "Acerca de" se ve atenuado, muestra cursor `not-allowed` y al hacer clic la URL no cambia.
+- [x] "VOLVER AL VAULT" del Detalle y del modal del Reproductor llevan a `/games`.
+- [x] "VOLVER A LA BIBLIOTECA" del Salón lleva a `/games`.
+- [x] Enviar el login y pulsar "JUGAR COMO INVITADO" redirigen a `/games`.
+- [x] Ningún `<Link>` de la landing muestra subrayado ni color de enlace por defecto.
+- [x] A 390 px de ancho, `/` no tiene scroll horizontal y feature-grid, mini-rail, stats, actividad y precios se apilan según los media queries de la referencia.
 
 ---
 
