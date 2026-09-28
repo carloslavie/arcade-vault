@@ -23,9 +23,11 @@
   --bronze: #d97a3a;
   --line: rgba(0, 245, 255, 0.18);
   --line-2: rgba(255, 255, 255, 0.06);
-  /* fuentes self-hosted vía next/font (ver app/layout.tsx) */
-  --pixel: var(--font-press-start-2p), "Press Start 2P", system-ui, monospace;
-  --mono: var(--font-jetbrains-mono), "JetBrains Mono", var(--font-courier-prime), "Courier Prime", "Courier New", monospace;
+  /* fuentes self-hosted vía next/font (ver app/layout.tsx), referenciadas por nombre y no con
+     var(--font-*): esas variables añaden "X Fallback" (Arial con size-adjust) y los glifos fuera
+     del subset (p.ej. el ▲ de .cover-rocas) se renderizarían distinto a la referencia. */
+  --pixel: "Press Start 2P", system-ui, monospace;
+  --mono: "JetBrains Mono", "Courier Prime", "Courier New", monospace;
 }
 
 /* tokens expuestos como utilidades de Tailwind: bg-bg-2, text-cyan, border-line, font-pixel, font-mono... */

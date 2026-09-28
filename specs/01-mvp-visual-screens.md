@@ -1,6 +1,6 @@
 # SPEC 01 — MVP visual: pantallas de Arcade Vault
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** —
 > **Fecha:** 2026-09-25
 > **Objetivo:** Portar 1:1 a Next.js (App Router) las cinco pantallas de `references/templates/` con datos mock y sin ningún juego real.
@@ -113,28 +113,28 @@ Todas las pantallas usan el markup y las clases de las plantillas (`.av-hero`, `
 
 ## Criterios de aceptación
 
-- [ ] `npm run build` termina sin errores ni warnings de tipos.
-- [ ] `npm run lint` termina sin errores.
-- [ ] La consola del navegador no muestra errores de hidratación en ninguna de las 5 rutas.
-- [ ] `/` muestra los 8 juegos. Escribir "caí" deja solo CAÍDA. El chip SHOOTER deja solo INVASORES y ROCAS.
-- [ ] Una búsqueda sin coincidencias muestra "NO HAY RESULTADOS".
-- [ ] Al pasar el ratón por una tarjeta se inclina, y al salir vuelve a su posición.
-- [ ] Hacer clic en una tarjeta o en su botón JUGAR abre `/games/<id>`.
-- [ ] `/games/caida` muestra título, descripción larga, stat-strip y 10 filas de leaderboard con top 3 resaltado.
-- [ ] `/games/no-existe` y `/games/no-existe/play` devuelven 404.
-- [ ] "JUGAR AHORA" abre `/games/<id>/play` y la puntuación empieza a subir sola.
-- [ ] PAUSA detiene la puntuación y muestra "EN PAUSA". REANUDAR la reanuda.
-- [ ] FIN abre el modal "FIN DEL JUEGO" con la puntuación final.
-- [ ] GUARDAR PUNTUACIÓN añade una entrada `{ game, score, name, at }` a `av_scores` y muestra "PUNTUACIÓN GUARDADA".
-- [ ] JUGAR DE NUEVO reinicia puntuación a 0, vidas a 3 y nivel a 01.
-- [ ] En `/login`, la tab CREAR CUENTA muestra el campo de correo e INICIAR SESIÓN lo oculta.
-- [ ] Enviar el login con usuario "neonfox" redirige a `/` y el Nav muestra `NEONFOX ▾`.
-- [ ] Recargar la página mantiene la sesión. Pulsar `NEONFOX ▾` cierra la sesión y el Nav vuelve a mostrar "Iniciar Sesión".
-- [ ] Con sesión iniciada, el HUD del Reproductor muestra ese nombre. Sin sesión muestra "INVITADO".
-- [ ] `/hall-of-fame` muestra podio, 12 filas y cambia los datos al pulsar otro juego.
-- [ ] La fila "TU MEJOR MARCA" aparece solo con sesión iniciada.
-- [ ] El link del Nav está activo en Biblioteca para `/`, `/games/*` y `/games/*/play`, y en Salón de la Fama para `/hall-of-fame`.
-- [ ] A 390 px de ancho no hay scroll horizontal, se ve el botón hamburguesa y el panel móvil abre y cierra.
+- [x] `npm run build` termina sin errores ni warnings de tipos.
+- [x] `npm run lint` termina sin errores.
+- [x] La consola del navegador no muestra errores de hidratación en ninguna de las 5 rutas.
+- [x] `/` muestra los 8 juegos. Escribir "caí" deja solo CAÍDA. El chip SHOOTER deja solo INVASORES y ROCAS.
+- [x] Una búsqueda sin coincidencias muestra "NO HAY RESULTADOS".
+- [x] Al pasar el ratón por una tarjeta se inclina, y al salir vuelve a su posición.
+- [x] Hacer clic en una tarjeta o en su botón JUGAR abre `/games/<id>`.
+- [x] `/games/caida` muestra título, descripción larga, stat-strip y 10 filas de leaderboard con top 3 resaltado.
+- [x] `/games/no-existe` y `/games/no-existe/play` devuelven 404.
+- [x] "JUGAR AHORA" abre `/games/<id>/play` y la puntuación empieza a subir sola.
+- [x] PAUSA detiene la puntuación y muestra "EN PAUSA". REANUDAR la reanuda.
+- [x] FIN abre el modal "FIN DEL JUEGO" con la puntuación final.
+- [x] GUARDAR PUNTUACIÓN añade una entrada `{ game, score, name, at }` a `av_scores` y muestra "PUNTUACIÓN GUARDADA".
+- [x] JUGAR DE NUEVO reinicia puntuación a 0, vidas a 3 y nivel a 01.
+- [x] En `/login`, la tab CREAR CUENTA muestra el campo de correo e INICIAR SESIÓN lo oculta.
+- [x] Enviar el login con usuario "neonfox" redirige a `/` y el Nav muestra `NEONFOX ▾`.
+- [x] Recargar la página mantiene la sesión. Pulsar `NEONFOX ▾` cierra la sesión y el Nav vuelve a mostrar "Iniciar Sesión".
+- [x] Con sesión iniciada, el HUD del Reproductor muestra ese nombre. Sin sesión muestra "INVITADO".
+- [x] `/hall-of-fame` muestra podio, 12 filas y cambia los datos al pulsar otro juego.
+- [x] La fila "TU MEJOR MARCA" aparece solo con sesión iniciada.
+- [x] El link del Nav está activo en Biblioteca para `/`, `/games/*` y `/games/*/play`, y en Salón de la Fama para `/hall-of-fame`.
+- [x] A 390 px de ancho no hay scroll horizontal, se ve el botón hamburguesa y el panel móvil abre y cierra.
 
 ---
 
