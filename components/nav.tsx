@@ -12,7 +12,7 @@ export function Nav() {
 
   // Library stays active on game detail and player routes
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" || pathname.startsWith("/games/") : pathname === href;
+    href === "/games" ? pathname === "/games" || pathname.startsWith("/games/") : pathname === href;
   const cls = (href: string) => (isActive(href) ? "active" : "");
   const close = () => setOpen(false);
 
@@ -26,8 +26,10 @@ export function Nav() {
           </div>
         </Link>
         <div className="links">
-          <Link href="/" className={cls("/")}>Biblioteca</Link>
+          <Link href="/" className={cls("/")}>Inicio</Link>
+          <Link href="/games" className={cls("/games")}>Biblioteca</Link>
           <Link href="/hall-of-fame" className={cls("/hall-of-fame")}>Salón de la Fama</Link>
+          <span className="disabled" aria-disabled="true">Acerca de</span>
         </div>
         <div className="spacer"></div>
         <div className="coin-counter">
@@ -45,8 +47,10 @@ export function Nav() {
       <div className={"av-mobile-backdrop" + (open ? " open" : "")} onClick={close}></div>
       <aside className={"av-mobile-panel" + (open ? " open" : "")}>
         <div className="pixel neon-cyan" style={{ fontSize: 11, marginBottom: 16 }}>MENÚ</div>
-        <Link href="/" className={cls("/")} onClick={close}>Biblioteca</Link>
+        <Link href="/" className={cls("/")} onClick={close}>Inicio</Link>
+        <Link href="/games" className={cls("/games")} onClick={close}>Biblioteca</Link>
         <Link href="/hall-of-fame" className={cls("/hall-of-fame")} onClick={close}>Salón de la Fama</Link>
+        <span className="disabled" aria-disabled="true">Acerca de</span>
         <Link href="/login" className={cls("/login")} onClick={close}>{user ? "Cuenta" : "Iniciar Sesión"}</Link>
         <div style={{ flex: 1 }}></div>
         <div className="pixel" style={{ fontSize: 9, color: "var(--ink-faint)", letterSpacing: "0.16em" }}>CRÉDITOS · 03</div>
