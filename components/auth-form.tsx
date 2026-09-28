@@ -4,10 +4,12 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useUser } from "@/components/user-provider";
 
-export function AuthForm() {
+type AuthTab = "in" | "up";
+
+export function AuthForm({ initialTab = "in" }: { initialTab?: AuthTab }) {
   const router = useRouter();
   const { login, logout } = useUser();
-  const [tab, setTab] = useState<"in" | "up">("in");
+  const [tab, setTab] = useState<AuthTab>(initialTab);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const [email, setEmail] = useState("");
@@ -16,12 +18,12 @@ export function AuthForm() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     login({ name: (user || "PLAYER1").toUpperCase().slice(0, 10) });
-    router.push("/");
+    router.push("/games");
   };
 
   const playAsGuest = () => {
     logout();
-    router.push("/");
+    router.push("/games");
   };
 
   return (
