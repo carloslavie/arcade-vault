@@ -27,3 +27,12 @@ npx skills add https://github.com/anthropics/skills --skill frontend-design
 
 ## ui-ux-pro-max-skill (otra skill recomendada para crear interfaces del usuario)
 npx skills add https://github.com/nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max
+## Formulario de contacto
+
+El formulario de `/about` envía los mensajes con [Resend](https://resend.com). Copia `.env.example` a `.env.local` y rellena:
+
+- `RESEND_API_KEY`: API key de Resend (`re_...`).
+- `CONTACT_TO_EMAIL`: buzón que recibe los mensajes.
+- `CONTACT_FROM_EMAIL`: remitente, p. ej. `Arcade Vault <onboarding@resend.dev>`.
+
+Con el remitente de prueba `onboarding@resend.dev`, Resend solo entrega al correo de tu cuenta de Resend, así que `CONTACT_TO_EMAIL` debe ser ese correo hasta que verifiques un dominio propio.

@@ -29,7 +29,7 @@ export function Nav() {
           <Link href="/" className={cls("/")}>Inicio</Link>
           <Link href="/games" className={cls("/games")}>Biblioteca</Link>
           <Link href="/hall-of-fame" className={cls("/hall-of-fame")}>Salón de la Fama</Link>
-          <span className="disabled" aria-disabled="true">Acerca de</span>
+          <Link href="/about" className={cls("/about")}>Acerca de</Link>
         </div>
         <div className="spacer"></div>
         <div className="coin-counter">
@@ -50,7 +50,7 @@ export function Nav() {
         <Link href="/" className={cls("/")} onClick={close}>Inicio</Link>
         <Link href="/games" className={cls("/games")} onClick={close}>Biblioteca</Link>
         <Link href="/hall-of-fame" className={cls("/hall-of-fame")} onClick={close}>Salón de la Fama</Link>
-        <span className="disabled" aria-disabled="true">Acerca de</span>
+        <Link href="/about" className={cls("/about")} onClick={close}>Acerca de</Link>
         <Link href="/login" className={cls("/login")} onClick={close}>{user ? "Cuenta" : "Iniciar Sesión"}</Link>
         <div style={{ flex: 1 }}></div>
         <div className="pixel" style={{ fontSize: 9, color: "var(--ink-faint)", letterSpacing: "0.16em" }}>CRÉDITOS · 03</div>
