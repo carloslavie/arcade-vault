@@ -1,70 +1,75 @@
 "use client";
 
-import { createContext, useContext, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useTransition } from "react";
 
-const USER_KEY = "av_user";
+import { signOut } from "@/app/login/actions";
+import { createClient } from "@/lib/supabase/client";
 
-export type User = { name: string };
+export type User = { id: string; name: string }; // name = profiles.username
 
 type UserContextValue = {
   user: User | null;
-  login: (user: User) => void;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextValue | null>(null);
 
-// Tiny external store over localStorage, read via useSyncExternalStore
-const listeners = new Set<() => void>();
-let cachedRaw: string | null = null;
-let cachedUser: User | null = null;
+// The user comes from the server (root layout), so the first render already matches the session
+export function UserProvider({
+  initialUser,
+  children,
+}: {
+  initialUser: User | null;
+  children: React.ReactNode;
+}) {
+  const user = initialUser;
+  const router = useRouter();
+  const [, startTransition] = useTransition();
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
-  window.addEventListener("storage", listener);
-  return () => {
-    listeners.delete(listener);
-    window.removeEventListener("storage", listener);
-  };
-}
-
-// Must return the same object while the stored value is unchanged
-function getSnapshot(): User | null {
-  let raw: string | null = null;
-  try {
-    raw = localStorage.getItem(USER_KEY);
-  } catch {}
-  if (raw !== cachedRaw) {
-    cachedRaw = raw;
+  // Session changed in another tab: re-render the server tree to pick up the new user
+  useEffect(() => {
+    let supabase: ReturnType<typeof createClient>;
     try {
-      cachedUser = raw ? (JSON.parse(raw) as User) : null;
+      supabase = createClient();
     } catch {
-      cachedUser = null;
+      return; // Missing env vars: stay as guest
     }
-  }
-  return cachedUser;
-}
 
-// Server and hydration render as guest, so the markup always matches
-function getServerSnapshot(): User | null {
-  return null;
-}
+    const refreshIfChanged = (sessionUserId: string | null) => {
+      if (sessionUserId !== (user?.id ?? null)) router.refresh();
+    };
 
-function writeUser(user: User | null) {
-  try {
-    if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
-    else localStorage.removeItem(USER_KEY);
-  } catch {}
-  listeners.forEach((l) => l());
-}
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      refreshIfChanged(session?.user.id ?? null);
+    });
 
-export function UserProvider({ children }: { children: React.ReactNode }) {
-  const user = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+    // A server-side sign-out elsewhere deletes the cookie without emitting SIGNED_OUT here,
+    // so compare again whenever the tab becomes visible
+    const onVisible = async () => {
+      if (document.visibilityState !== "visible") return;
+      const { data } = await supabase.auth.getSession();
+      refreshIfChanged(data.session?.user.id ?? null);
+    };
+    document.addEventListener("visibilitychange", onVisible);
 
-  const login = (u: User) => writeUser(u);
-  const logout = () => writeUser(null);
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [user?.id, router]);
 
-  return <UserContext.Provider value={{ user, login, logout }}>{children}</UserContext.Provider>;
+  // Stays on the current page; signOut revalidates the layout so the Nav updates
+  const logout = () => startTransition(() => signOut());
+
+  return (
+    <UserContext.Provider value={{ user, logout }}>
+      {children}
+    </UserContext.Provider>
+  );
 }
 
 export function useUser() {

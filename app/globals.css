@@ -1319,9 +1319,22 @@
   .contact-form .hp-field { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   .contact-form :disabled { opacity: 0.6; cursor: wait; }
 
-  /* SPEC 02/03: without motion, .reveal sections are shown straight away and the divider stops blinking */
+  /* SPEC 04: auth form error line and pending state */
+  .auth-error {
+    margin: 4px 0 10px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--magenta); text-shadow: 0 0 6px rgba(255,0,110,0.45);
+  }
+  .auth-card :disabled { opacity: 0.5; cursor: wait; }
+  .auth-card .btn:disabled:hover { color: inherit; box-shadow: none; }
+  .auth-card .btn.pending { opacity: 1; color: var(--cyan); }
+  .auth-card .btn.pending .caret { animation: blink 1s steps(1, end) infinite; }
+  .social .btn:disabled { cursor: not-allowed; }
+
+  /* SPEC 02/03/04: without motion, .reveal sections are shown straight away and blinking stops */
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
     .div-pixels span { animation: none; }
+    .auth-card .btn.pending .caret { animation: none; }
   }
 }
