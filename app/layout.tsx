@@ -3,6 +3,7 @@ import { Courier_Prime, JetBrains_Mono, Press_Start_2P } from "next/font/google"
 import { Footer } from "@/components/footer";
 import { Nav } from "@/components/nav";
 import { UserProvider } from "@/components/user-provider";
+import { getCurrentUser } from "@/lib/supabase/server";
 import "./globals.css";
 
 const pressStart2P = Press_Start_2P({
@@ -28,7 +29,9 @@ export const metadata: Metadata = {
   description: "Juega clásicos arcade y compite por el puntaje más alto.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
+
   return (
     <html
       lang="es"
@@ -38,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <div className="av-bg" />
         <div className="av-noise" />
         <div id="root">
-          <UserProvider>
+          <UserProvider initialUser={user}>
             <Nav />
             <main className="av-main">{children}</main>
             <Footer />
