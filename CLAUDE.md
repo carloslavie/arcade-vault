@@ -17,8 +17,9 @@ No test framework is set up yet.
 - **Next.js 16.3 (App Router, `app/` dir) + React 19.2.** APIs differ from older Next.js. Check `node_modules/next/dist/docs/` (`01-app/`, `03-architecture/`, `index.md`) before using any Next API. For example, route-typed globals like `LayoutProps<"/">` are used instead of hand-written prop types.
 - **Tailwind CSS v4** via `@tailwindcss/postcss`. There is no `tailwind.config.*`. `app/globals.css` is the global theme, ported 1:1 from `references/templates/styles.css` (dark-only retro neon, no light mode). Tailwind is imported **without preflight** (only `theme.css` + `utilities.css`) so the original look is preserved; theme classes (`.btn`, `.card`, `.av-*`...) live in `@layer components` and CSS vars (`--bg`, `--cyan`, `--pixel`...) on `:root`, also exposed as Tailwind tokens under `@theme inline` (`text-cyan`, `bg-bg-2`, `font-pixel`...).
 - Fonts: Press Start 2P, JetBrains Mono and Courier Prime via `next/font/google` in `app/layout.tsx`, consumed through `--pixel` / `--mono`. The layout renders `.av-bg`, `.av-noise` and `#root` like the reference HTML.
+- Prettier (`.prettierrc.json`) + ESLint run automatically on every file Claude writes/edits via the project `PostToolUse` hook in `.claude/settings.json` (`.claude/hooks/format-and-lint.mjs`); remaining ESLint errors are fed back to Claude. Run `npm run format` / `npm run lint` manually.
 - TypeScript strict mode. Import alias `@/*` maps to the repo root.
 
 ## Slills
-Usa siempre /frontend-design para diseñar la interfaz del usuario.
 
+Usa siempre /frontend-design para diseñar la interfaz del usuario.
