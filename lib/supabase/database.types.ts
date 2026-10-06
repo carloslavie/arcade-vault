@@ -32,6 +32,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      scores: {
+        Row: {
+          created_at: string;
+          game_id: string;
+          id: number;
+          score: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          game_id: string;
+          id?: never;
+          score: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          game_id?: string;
+          id?: never;
+          score?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "scores_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

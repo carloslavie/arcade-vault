@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { EnginePlayer } from "@/components/engine-player";
 import { GamePlayer } from "@/components/game-player";
+import { isPlayable } from "@/lib/engines/ids";
 import { GAMES, getGame } from "@/lib/games";
 
 export function generateStaticParams() {
@@ -17,5 +19,6 @@ export default async function GamePlayPage({ params }: PageProps<"/games/[id]/pl
   const game = getGame(id);
   if (!game) notFound();
 
-  return <GamePlayer game={game} />;
+  // Real engine when the game has one; the fake player otherwise
+  return isPlayable(id) ? <EnginePlayer game={game} /> : <GamePlayer game={game} />;
 }
