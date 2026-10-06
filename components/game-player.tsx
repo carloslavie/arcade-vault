@@ -4,20 +4,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUser } from "@/components/user-provider";
 import type { Game } from "@/lib/games";
-import { saveScore } from "@/lib/scores";
 
 const INITIAL_RUN = { score: 0, lives: 3, level: 1 };
 
+// Fake player for games without an engine: nothing is saved
 export function GamePlayer({ game }: { game: Game }) {
   const { user } = useUser();
   // score and level live together so the level-up is computed in the same update
   const [run, setRun] = useState(INITIAL_RUN);
   const [paused, setPaused] = useState(false);
   const [over, setOver] = useState(false);
-  const [saved, setSaved] = useState(false);
-  // null = not edited yet, so the name follows the session once it is read
-  const [editedName, setEditedName] = useState<string | null>(null);
-  const name = editedName ?? user?.name ?? "INVITADO";
+  const name = user?.name ?? "INVITADO";
 
   // Fake gameplay: score climbs by itself until paused or finished
   useEffect(() => {
@@ -26,7 +23,11 @@ export function GamePlayer({ game }: { game: Game }) {
       const gain = Math.floor(10 + Math.random() * 90);
       setRun((r) => {
         const score = r.score + gain;
-        return { ...r, score, level: score % 2500 < 100 ? r.level + 1 : r.level };
+        return {
+          ...r,
+          score,
+          level: score % 2500 < 100 ? r.level + 1 : r.level,
+        };
       });
     }, 220);
     return () => clearInterval(t);
@@ -36,12 +37,6 @@ export function GamePlayer({ game }: { game: Game }) {
     setRun(INITIAL_RUN);
     setPaused(false);
     setOver(false);
-    setSaved(false);
-  };
-
-  const save = () => {
-    saveScore({ game: game.id, score: run.score, name });
-    setSaved(true);
   };
 
   return (
@@ -50,7 +45,9 @@ export function GamePlayer({ game }: { game: Game }) {
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           <div className="hud-stat">
             <div className="l">Jugador</div>
-            <div className="v" style={{ color: "var(--ink)" }}>{name}</div>
+            <div className="v" style={{ color: "var(--ink)" }}>
+              {name}
+            </div>
           </div>
           <div className="hud-stat">
             <div className="l">Puntuación</div>
@@ -66,9 +63,15 @@ export function GamePlayer({ game }: { game: Game }) {
           </div>
         </div>
         <div className="hud-actions">
-          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>{paused ? "REANUDAR" : "PAUSA"}</button>
-          <button className="btn magenta" onClick={() => setOver(true)}>FIN</button>
-          <Link href={`/games/${game.id}`} className="btn ghost">SALIR</Link>
+          <button className="btn yellow" onClick={() => setPaused((p) => !p)}>
+            {paused ? "REANUDAR" : "PAUSA"}
+          </button>
+          <button className="btn magenta" onClick={() => setOver(true)}>
+            FIN
+          </button>
+          <Link href={`/games/${game.id}`} className="btn ghost">
+            SALIR
+          </Link>
         </div>
       </div>
 
@@ -82,10 +85,23 @@ export function GamePlayer({ game }: { game: Game }) {
             <div className="player-ship"></div>
           </div>
           {paused && (
-            <div className="crt-content" style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}>
+            <div
+              className="crt-content"
+              style={{ background: "rgba(0,0,0,0.6)", zIndex: 5 }}
+            >
               <div>
-                <div className="pixel neon-yellow" style={{ fontSize: 22 }}>EN PAUSA</div>
-                <div className="mono" style={{ fontSize: 11, color: "var(--ink-dim)", marginTop: 10, letterSpacing: "0.16em" }}>
+                <div className="pixel neon-yellow" style={{ fontSize: 22 }}>
+                  EN PAUSA
+                </div>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ink-dim)",
+                    marginTop: 10,
+                    letterSpacing: "0.16em",
+                  }}
+                >
                   PULSA REANUDAR PARA CONTINUAR
                 </div>
               </div>
@@ -105,21 +121,16 @@ export function GamePlayer({ game }: { game: Game }) {
             <h2>FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{run.score.toLocaleString("es-ES")}</div>
-            {!saved ? (
-              <div className="input-row">
-                <input
-                  value={name}
-                  onChange={(e) => setEditedName(e.target.value.toUpperCase().slice(0, 10))}
-                  placeholder="TUS INICIALES"
-                />
-                <button className="btn yellow" onClick={save}>GUARDAR PUNTUACIÓN</button>
-              </div>
-            ) : (
-              <div className="toast-saved">▸ PUNTUACIÓN GUARDADA_</div>
-            )}
+            <div className="save-status">
+              ▸ MODO DEMO · PUNTUACIÓN NO GUARDADA
+            </div>
             <div className="actions">
-              <button className="btn" onClick={restart}>JUGAR DE NUEVO</button>
-              <Link href="/games" className="btn magenta">VOLVER AL VAULT</Link>
+              <button className="btn" onClick={restart}>
+                JUGAR DE NUEVO
+              </button>
+              <Link href="/games" className="btn magenta">
+                VOLVER AL VAULT
+              </Link>
             </div>
           </div>
         </div>
