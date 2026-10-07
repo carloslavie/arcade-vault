@@ -6,13 +6,13 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type GameRow = Database["public"]["Tables"]["games"]["Row"];
 
-const COLUMNS = "id, title, short, long, cat, cover, color";
+const COLUMNS = "id, title, short, long, cat, cover, color, difficulty";
 
 // The CHECKs on public.games guarantee cat and color hold valid values
 function toGame(
   row: Pick<
     GameRow,
-    "id" | "title" | "short" | "long" | "cat" | "cover" | "color"
+    "id" | "title" | "short" | "long" | "cat" | "cover" | "color" | "difficulty"
   >,
 ): Game {
   return {
@@ -23,6 +23,7 @@ function toGame(
     cat: row.cat as Category,
     cover: row.cover,
     color: row.color as NeonColor,
+    difficulty: row.difficulty,
   };
 }
 

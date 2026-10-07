@@ -1,6 +1,6 @@
 # SPEC 06 — Tabla `games` en Supabase y leaderboard real en el detalle del juego
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 02, SPEC 04, SPEC 05
 > **Fecha:** 2026-10-06
 > **Objetivo:** Mover el catálogo de juegos de `lib/games.ts` a una tabla `public.games` de Supabase (con FK desde `scores`) y mostrar en `/games/[id]` un leaderboard real con la mejor marca de cada jugador.

@@ -20,6 +20,7 @@ export type Database = {
           color: string;
           cover: string;
           created_at: string;
+          difficulty: number;
           id: string;
           long: string;
           short: string;
@@ -31,6 +32,7 @@ export type Database = {
           color: string;
           cover: string;
           created_at?: string;
+          difficulty: number;
           id: string;
           long: string;
           short: string;
@@ -42,6 +44,7 @@ export type Database = {
           color?: string;
           cover?: string;
           created_at?: string;
+          difficulty?: number;
           id?: string;
           long?: string;
           short?: string;
@@ -112,6 +115,14 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_game_stats: {
+        Args: { p_game_id?: string };
+        Returns: {
+          best: number;
+          game_id: string;
+          plays: number;
+        }[];
+      };
       get_leaderboard: {
         Args: { p_game_id: string; p_limit?: number };
         Returns: {

@@ -12,6 +12,7 @@ export interface Game {
   cat: Category;
   cover: string;
   color: NeonColor;
+  difficulty: number; // 1–5
 }
 
 export interface ScoreRow {
@@ -21,25 +22,42 @@ export interface ScoreRow {
   date: string;
 }
 
-export interface GameMockStats {
-  best: number;
-  plays: string;
+export interface GameStats {
+  plays: number;
+  best: number | null; // null = nobody has scored yet
 }
 
-// Values from the old GAMES array, until there are real stats
-export const GAME_MOCK_STATS: Record<string, GameMockStats> = {
-  "bloque-buster": { best: 28450, plays: "12.4K" },
-  caida: { best: 184220, plays: "31.8K" },
-  serpentina: { best: 7820, plays: "9.1K" },
-  gloton: { best: 96400, plays: "27.2K" },
-  invasores: { best: 54190, plays: "18.0K" },
-  rocas: { best: 41200, plays: "15.6K" },
-  ranaria: { best: 18900, plays: "6.4K" },
-  "duelo-pixel": { best: 24, plays: "4.2K" },
-};
+const EMPTY_STAT = "—";
 
-export function mockStats(id: string): GameMockStats {
-  return GAME_MOCK_STATS[id] ?? { best: 0, plays: "0" };
+// es-ES skips grouping on 4-digit numbers by default ("9870"), so force it
+const PLAYS_EXACT = new Intl.NumberFormat("es-ES", { useGrouping: "always" });
+const PLAYS_COMPACT = new Intl.NumberFormat("es-ES", {
+  maximumFractionDigits: 1,
+});
+
+// One decimal, truncated so it never shows more plays than there are
+function compact(n: number, unit: number, suffix: string): string {
+  return PLAYS_COMPACT.format(Math.floor((n * 10) / unit) / 10) + suffix;
+}
+
+// < 10.000 → exact ("9.870"); < 1.000.000 → "15,6K"; rest → "1,2M". null → "—".
+export function formatPlays(plays: number | null | undefined): string {
+  if (plays == null) return EMPTY_STAT;
+  if (plays < 10_000) return PLAYS_EXACT.format(plays);
+  if (plays < 1_000_000) return compact(plays, 1_000, "K");
+  return compact(plays, 1_000_000, "M");
+}
+
+// es-ES ("41.200"); null/undefined → "—".
+export function formatBest(best: number | null | undefined): string {
+  return best == null ? EMPTY_STAT : best.toLocaleString("es-ES");
+}
+
+// 4 → "★ ★ ★ ★ ☆"
+export function difficultyStars(difficulty: number): string {
+  return Array.from({ length: 5 }, (_, i) => (i < difficulty ? "★" : "☆")).join(
+    " ",
+  );
 }
 
 export const CATS: ("TODOS" | Category)[] = [
