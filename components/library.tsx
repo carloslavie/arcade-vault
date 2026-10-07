@@ -3,9 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { GameCard } from "@/components/game-card";
-import { CATS, type Game } from "@/lib/games";
+import { CATS, type Game, type GameStats } from "@/lib/games";
 
-export function Library({ games }: { games: Game[] }) {
+export function Library({
+  games,
+  stats,
+}: {
+  games: Game[];
+  stats: Record<string, GameStats> | null;
+}) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]>("TODOS");
@@ -49,6 +55,7 @@ export function Library({ games }: { games: Game[] }) {
           <GameCard
             key={g.id}
             game={g}
+            best={stats?.[g.id]?.best}
             onSelect={(game) => router.push(`/games/${game.id}`)}
           />
         ))}

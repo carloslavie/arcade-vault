@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Library } from "@/components/library";
 import { getGames } from "@/lib/catalog";
+import { getAllGameStats } from "@/lib/game-stats";
 
 export const metadata: Metadata = { title: "Biblioteca" };
 
 export default async function GamesPage() {
-  const games = await getGames();
+  // getAllGameStats never throws: a failure shows "—" on every card
+  const [games, stats] = await Promise.all([getGames(), getAllGameStats()]);
 
   return (
     <div className="fade-in">
@@ -15,7 +17,7 @@ export default async function GamesPage() {
           INSERTA UNA MONEDA PARA JUGAR <span className="blink">_</span>
         </div>
       </section>
-      <Library games={games} />
+      <Library games={games} stats={stats} />
     </div>
   );
 }

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Leaderboard } from "@/components/leaderboard";
 import { getGame } from "@/lib/catalog";
-import { mockStats } from "@/lib/games";
+import { getGameStats } from "@/lib/game-stats";
+import { difficultyStars, formatBest, formatPlays } from "@/lib/games";
 import { getLeaderboard } from "@/lib/leaderboard";
 
 export async function generateMetadata({
@@ -17,10 +18,13 @@ export default async function GameDetailPage({
   params,
 }: PageProps<"/games/[id]">) {
   const { id } = await params;
-  // getLeaderboard never throws: a failure renders the error state inside the panel
-  const [game, scores] = await Promise.all([getGame(id), getLeaderboard(id)]);
+  // getLeaderboard and getGameStats never throw: a failure renders "—" or the panel's error state
+  const [game, scores, stats] = await Promise.all([
+    getGame(id),
+    getLeaderboard(id),
+    getGameStats(id),
+  ]);
   if (!game) notFound();
-  const stats = mockStats(game.id);
 
   return (
     <div className="av-detail fade-in">
@@ -40,7 +44,7 @@ export default async function GameDetailPage({
           <div className="stat-strip">
             <div>
               <div className="l">Partidas</div>
-              <div className="v">{stats.plays}</div>
+              <div className="v">{formatPlays(stats?.plays)}</div>
             </div>
             <div>
               <div className="l">Mejor global</div>
@@ -51,19 +55,20 @@ export default async function GameDetailPage({
                   textShadow: "0 0 6px rgba(255,0,110,0.5)",
                 }}
               >
-                {stats.best.toLocaleString("es-ES")}
+                {formatBest(stats?.best)}
               </div>
             </div>
             <div>
               <div className="l">Dificultad</div>
               <div
                 className="v"
+                aria-label={`Dificultad ${game.difficulty} de 5`}
                 style={{
                   color: "var(--yellow)",
                   textShadow: "0 0 6px rgba(245,255,0,0.5)",
                 }}
               >
-                ★ ★ ★ ☆ ☆
+                {difficultyStars(game.difficulty)}
               </div>
             </div>
           </div>

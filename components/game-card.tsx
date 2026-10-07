@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { mockStats, type Game } from "@/lib/games";
+import { formatBest, type Game } from "@/lib/games";
 
 const BTN_COLOR: Partial<Record<Game["color"], string>> = {
   magenta: "magenta",
@@ -10,9 +10,11 @@ const BTN_COLOR: Partial<Record<Game["color"], string>> = {
 
 export function GameCard({
   game,
+  best,
   onSelect,
 }: {
   game: Game;
+  best: number | null | undefined; // undefined/null → "—"
   onSelect: (game: Game) => void;
 }) {
   const tiltRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export function GameCard({
         <div className="row">
           <div className="score-badge">
             <span>MEJOR PUNTUACIÓN</span>
-            <b>{mockStats(game.id).best.toLocaleString("es-ES")}</b>
+            <b>{formatBest(best)}</b>
           </div>
           <button
             className={"btn " + (BTN_COLOR[game.color] ?? "")}
