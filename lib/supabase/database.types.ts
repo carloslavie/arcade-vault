@@ -14,6 +14,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      games: {
+        Row: {
+          cat: string;
+          color: string;
+          cover: string;
+          created_at: string;
+          id: string;
+          long: string;
+          short: string;
+          sort_order: number;
+          title: string;
+        };
+        Insert: {
+          cat: string;
+          color: string;
+          cover: string;
+          created_at?: string;
+          id: string;
+          long: string;
+          short: string;
+          sort_order: number;
+          title: string;
+        };
+        Update: {
+          cat?: string;
+          color?: string;
+          cover?: string;
+          created_at?: string;
+          id?: string;
+          long?: string;
+          short?: string;
+          sort_order?: number;
+          title?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -56,6 +92,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "scores_game_id_fkey";
+            columns: ["game_id"];
+            isOneToOne: false;
+            referencedRelation: "games";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "scores_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
@@ -69,7 +112,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      get_leaderboard: {
+        Args: { p_game_id: string; p_limit?: number };
+        Returns: {
+          created_at: string;
+          rank: number;
+          score: number;
+          username: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

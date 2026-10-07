@@ -1,11 +1,20 @@
 "use client";
 
 import { useRef } from "react";
-import type { Game } from "@/lib/games";
+import { mockStats, type Game } from "@/lib/games";
 
-const BTN_COLOR: Partial<Record<Game["color"], string>> = { magenta: "magenta", yellow: "yellow" };
+const BTN_COLOR: Partial<Record<Game["color"], string>> = {
+  magenta: "magenta",
+  yellow: "yellow",
+};
 
-export function GameCard({ game, onSelect }: { game: Game; onSelect: (game: Game) => void }) {
+export function GameCard({
+  game,
+  onSelect,
+}: {
+  game: Game;
+  onSelect: (game: Game) => void;
+}) {
   const tiltRef = useRef<HTMLDivElement>(null);
 
   const onMove = (e: React.MouseEvent) => {
@@ -21,7 +30,13 @@ export function GameCard({ game, onSelect }: { game: Game; onSelect: (game: Game
   };
 
   return (
-    <div ref={tiltRef} className="card" onMouseMove={onMove} onMouseLeave={onLeave} onClick={() => onSelect(game)}>
+    <div
+      ref={tiltRef}
+      className="card"
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      onClick={() => onSelect(game)}
+    >
       <div className="cover">
         <div className={"cover-bg " + game.cover}></div>
         <div className="label">{game.cat}</div>
@@ -32,7 +47,7 @@ export function GameCard({ game, onSelect }: { game: Game; onSelect: (game: Game
         <div className="row">
           <div className="score-badge">
             <span>MEJOR PUNTUACIÓN</span>
-            <b>{game.best.toLocaleString("es-ES")}</b>
+            <b>{mockStats(game.id).best.toLocaleString("es-ES")}</b>
           </div>
           <button
             className={"btn " + (BTN_COLOR[game.color] ?? "")}
