@@ -34,4 +34,13 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
       { keys: ["P", "ESC"], label: "Pausa" },
     ],
   },
+  arkanoid: {
+    scoreStep: 10,
+    initialLives: 3,
+    hud: ["lives", "level"],
+    controls: [
+      { keys: ["←", "→", "RATÓN"], label: "Mover" },
+      { keys: ["P", "ESC"], label: "Pausa" },
+    ],
+  },
 };
