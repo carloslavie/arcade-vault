@@ -4,5 +4,5 @@ import type { PlayableGameId } from "@/lib/engines/ids";
 import type { GameFactory } from "@/lib/engines/types";
 
 export const ENGINES: Record<PlayableGameId, GameFactory> = {
-  rocas: createAsteroidsGame,
+  asteroids: createAsteroidsGame,
 };
