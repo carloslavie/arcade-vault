@@ -13,12 +13,12 @@ import {
 import { saveScore } from "@/app/games/[id]/play/actions";
 import { useUser } from "@/components/user-provider";
 import { ENGINES } from "@/lib/engines";
-import { isPlayable } from "@/lib/engines/ids";
+import { isPlayable, type PlayableGameId } from "@/lib/engines/ids";
+import { GAME_META, type GameMeta, type HudStat } from "@/lib/engines/meta";
 import type { GameInstance, GamePhase, GameStats } from "@/lib/engines/types";
 import type { Game } from "@/lib/games";
 import type { SaveScoreResult } from "@/lib/scores";
 
-const INITIAL_STATS: GameStats = { score: 0, lives: 3, level: 1 };
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
 
 type SaveState =
@@ -42,20 +42,42 @@ function useIsTouch(): boolean | null {
   );
 }
 
-const CONTROLS: { keys: string[]; label: string }[] = [
-  { keys: ["←", "→"], label: "Rotar" },
-  { keys: ["↑"], label: "Propulsar" },
-  { keys: ["ESPACIO"], label: "Disparar" },
-  { keys: ["P", "ESC"], label: "Pausa" },
-];
+// Stats before the engine emits anything: only the cells this game shows
+function initialStats(meta: GameMeta): GameStats {
+  return {
+    score: 0,
+    level: 1,
+    ...(meta.initialLives !== null && { lives: meta.initialLives }),
+    ...(meta.hud.includes("lines") && { lines: 0 }),
+  };
+}
+
+const HUD_LABELS: Record<HudStat, string> = {
+  lives: "Vidas",
+  lines: "Líneas",
+  level: "Nivel",
+};
+
+function hudValue(stat: HudStat, stats: GameStats): string {
+  switch (stat) {
+    case "lives":
+      return "♥ ".repeat(stats.lives ?? 0).trim() || "—";
+    case "lines":
+      return (stats.lines ?? 0).toLocaleString("es-ES");
+    case "level":
+      return String(stats.level).padStart(2, "0");
+  }
+}
 
 export function EnginePlayer({ game }: { game: Game }) {
   const { user } = useUser();
   const isTouch = useIsTouch();
+  // The page only renders EnginePlayer when isPlayable(game.id)
+  const meta = GAME_META[game.id as PlayableGameId];
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const instanceRef = useRef<GameInstance | null>(null);
   const [phase, setPhase] = useState<GamePhase>("ready");
-  const [stats, setStats] = useState(INITIAL_STATS);
+  const [stats, setStats] = useState(() => initialStats(meta));
   const [save, setSave] = useState<SaveState>({ status: "idle" });
   const [, startTransition] = useTransition();
   // Each run has an id so a run is saved once, even with Strict Mode or a late response
@@ -135,14 +157,12 @@ export function EnginePlayer({ game }: { game: Game }) {
             <div className="l">Puntuación</div>
             <div className="v">{stats.score.toLocaleString("es-ES")}</div>
           </div>
-          <div className="hud-stat lives">
-            <div className="l">Vidas</div>
-            <div className="v">{"♥ ".repeat(stats.lives).trim() || "—"}</div>
-          </div>
-          <div className="hud-stat level">
-            <div className="l">Nivel</div>
-            <div className="v">{String(stats.level).padStart(2, "0")}</div>
-          </div>
+          {meta.hud.map((stat) => (
+            <div key={stat} className={`hud-stat ${stat}`}>
+              <div className="l">{HUD_LABELS[stat]}</div>
+              <div className="v">{hudValue(stat, stats)}</div>
+            </div>
+          ))}
         </div>
         <div className="hud-actions">
           <button
@@ -189,7 +209,7 @@ export function EnginePlayer({ game }: { game: Game }) {
             <div className="crt-overlay">
               <div className="title">{game.title}</div>
               <dl className="controls">
-                {CONTROLS.map((c) => (
+                {meta.controls.map((c) => (
                   <div key={c.label} style={{ display: "contents" }}>
                     <dt>
                       {c.keys.map((k) => (
@@ -230,9 +250,16 @@ export function EnginePlayer({ game }: { game: Game }) {
             <h2 id="game-over-title">FIN DEL JUEGO</h2>
             <div className="final-label">PUNTUACIÓN FINAL</div>
             <div className="final">{stats.score.toLocaleString("es-ES")}</div>
-            <div className="final-level">
-              NIVEL {String(stats.level).padStart(2, "0")}
-            </div>
+            {meta.hud.includes("level") && (
+              <div className="final-level">
+                NIVEL {String(stats.level).padStart(2, "0")}
+              </div>
+            )}
+            {meta.hud.includes("lines") && (
+              <div className="final-level lines">
+                LÍNEAS {(stats.lines ?? 0).toLocaleString("es-ES")}
+              </div>
+            )}
             <SaveStatus
               save={save}
               onRetry={() => persist(runRef.current, scoreRef.current)}

@@ -1070,6 +1070,10 @@
     color: var(--yellow);
     text-shadow: 0 0 6px rgba(245, 255, 0, 0.5);
   }
+  .hud-stat.lines .v {
+    color: var(--green);
+    text-shadow: 0 0 6px rgba(0, 255, 136, 0.5);
+  }
   .hud-actions {
     display: flex;
     gap: 10px;
@@ -3004,6 +3008,10 @@
     color: var(--cyan);
     text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
     margin-bottom: 4px;
+  }
+  .modal .final-level.lines {
+    color: var(--green);
+    text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
   }
   .save-status {
     margin-top: 14px;
