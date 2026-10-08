@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
+import { cache } from "react";
 
 import type { User } from "@/components/user-provider";
 import type { Database } from "@/lib/supabase/database.types";
@@ -32,8 +33,9 @@ export async function createClient(): Promise<SupabaseClient<Database>> {
   );
 }
 
-// null if there is no session or the profile doesn't exist
-export async function getCurrentUser(): Promise<User | null> {
+// null if there is no session or the profile doesn't exist.
+// cache(): the layout and the page share one lookup per request.
+export const getCurrentUser = cache(async (): Promise<User | null> => {
   try {
     const supabase = await createClient();
     const {
@@ -56,4 +58,4 @@ export async function getCurrentUser(): Promise<User | null> {
     console.error("getCurrentUser failed:", error);
     return null;
   }
-}
+});

@@ -3182,6 +3182,86 @@
     margin-top: 28px;
   }
 
+  /* SPEC 09: Hall of Fame states. An empty podium place is an unlit cabinet: medal outline, no glow */
+  .podium-slot.ghost {
+    border-style: dashed;
+    box-shadow: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 3px
+    );
+  }
+  .podium-slot.ghost .rank-num,
+  .podium-slot.ghost .pixel {
+    opacity: 0.45;
+    text-shadow: none;
+  }
+  .podium-slot.ghost .name,
+  .podium-slot.ghost .score,
+  .podium-slot.ghost .date {
+    color: var(--ink-faint);
+    text-shadow: none;
+    letter-spacing: 0.2em;
+  }
+  .podium-slot.ghost.silver {
+    opacity: 0.7;
+  }
+  .podium-slot.ghost.bronze {
+    opacity: 0.5;
+  }
+  .hall-table .tr.status {
+    grid-template-columns: 1fr;
+    padding: 18px 18px 20px;
+    font-family: var(--pixel);
+    font-size: 10px;
+    line-height: 1.7;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+  }
+  .hall-table .tr.status.error {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--magenta);
+    text-shadow: 0 0 6px rgba(255, 0, 110, 0.45);
+  }
+  .hall-table .tr.status .hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-shadow: none;
+  }
+  .hall-table .tr.status.you-none {
+    padding: 12px 18px 14px;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--ink-dim);
+    background: rgba(245, 255, 0, 0.02);
+    border-left: 3px dashed rgba(245, 255, 0, 0.35);
+    padding-left: 15px;
+  }
+  /* Your own row inside the ranking keeps its medal colours; the name and a "< TÚ" tag mark it (the pixel font has no ◂) */
+  .hall-table .tr.you .pl {
+    color: var(--yellow);
+  }
+  .hall-table .tr.you[aria-current] .pl::after {
+    content: "< TÚ";
+    display: inline-block;
+    white-space: nowrap;
+    margin-left: 10px;
+    font-family: var(--pixel);
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    color: var(--yellow);
+    text-shadow: 0 0 6px rgba(245, 255, 0, 0.5);
+  }
+  .av-hall .av-coming {
+    margin: 8px auto 0;
+    padding: 0;
+  }
+
   /* SPEC 02/03/04/05: without motion, .reveal sections are shown straight away and blinking stops */
   @media (prefers-reduced-motion: reduce) {
     .reveal {

@@ -132,6 +132,15 @@ export type Database = {
           username: string;
         }[];
       };
+      get_player_best: {
+        Args: { p_game_id: string; p_user_id: string };
+        Returns: {
+          created_at: string;
+          rank: number;
+          score: number;
+          username: string;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;
