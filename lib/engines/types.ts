@@ -4,8 +4,9 @@ export type GamePhase = "ready" | "playing" | "paused" | "over";
 
 export interface GameStats {
   score: number;
-  lives: number;
   level: number;
+  lives?: number; // asteroids
+  lines?: number; // tetris
 }
 
 export interface GameCallbacks {

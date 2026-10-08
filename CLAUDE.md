@@ -23,3 +23,5 @@ No test framework is set up yet.
 ## Slills
 
 Usa siempre /frontend-design para diseñar la interfaz del usuario.
+
+Para añadir un juego jugable nuevo (porteado de `references/started-games/` o desde cero) usa `/add-game`: genera la spec con el patrón de integración de SPEC 05/06 y luego se implementa con `/spec-impl`.
