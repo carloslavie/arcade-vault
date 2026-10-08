@@ -16,6 +16,12 @@ export function Library({
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]>("TODOS");
 
+  // TODOS + categories with at least one game, in CATS order
+  const cats = useMemo(
+    () => CATS.filter((c) => c === "TODOS" || games.some((g) => g.cat === c)),
+    [games],
+  );
+
   const filtered = useMemo(
     () =>
       games.filter(
@@ -25,6 +31,23 @@ export function Library({
       ),
     [games, q, cat],
   );
+
+  // No playable game at all: nothing to search or filter
+  if (games.length === 0) {
+    return (
+      <div className="av-coming">
+        <div className="av-coming-slots" aria-hidden="true">
+          <div />
+          <div />
+          <div />
+        </div>
+        <div className="av-coming-msg">▸ PRÓXIMAMENTE MÁS JUEGOS</div>
+        <div className="av-coming-hint">
+          Estamos preparando la próxima máquina. Vuelve pronto.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -38,7 +61,7 @@ export function Library({
           />
         </div>
         <div className="av-chips">
-          {CATS.map((c) => (
+          {cats.map((c) => (
             <button
               key={c}
               className={"chip" + (cat === c ? " active" : "")}
