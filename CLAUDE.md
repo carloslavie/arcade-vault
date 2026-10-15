@@ -27,7 +27,7 @@ No test framework is set up yet. Verify UI changes in the browser (Playwright MC
 
 - `/` landing (`components/landing.tsx`, mock copy in `lib/home.ts`).
 - `/games` library: only playable games (`isPlayable`), with real stats per card.
-(see `implemented-games.md`) when you need to check wich games are implemented and how to implement new ones.
+  (see `implemented-games.md`) when you need to check wich games are implemented and how to implement new ones.
 - `/games/[id]` detail with real leaderboard; `/games/[id]/play` mounts `EnginePlayer` for playable games (fake `GamePlayer` otherwise). `play/actions.ts` holds the `saveScore` Server Action.
 - `/hall-of-fame?game=<id>` top 20 per playable game plus the current user's best row.
 - `/login` sign in / sign up (Server Actions in `login/actions.ts`, validation in `lib/auth.ts`).
@@ -62,3 +62,11 @@ Usa siempre /frontend-design para diseñar la interfaz del usuario.
 - `/spec` (en `.claude/skills/spec/`, de https://github.com/Klerith/fernando-skills): diseña una spec nueva en `specs/`.
 - `/spec-impl <NN-spec-name>`: implementa una spec aprobada, creando la rama `spec-NN-...`.
 - `/add-game`: para añadir un juego jugable nuevo (porteado de `references/started-games/` o desde cero). Genera la spec con el patrón de integración de SPEC 05/06 (fila en `public.games`, engine en `lib/engines/<id>/`, entradas en `ids.ts` / `meta.ts` / `index.ts`, assets en `public/games/<id>/`) y luego se implementa con `/spec-impl`.
+
+## Agentes
+
+Subagentes de proyecto en `.claude/agents/`.
+
+- `game-planner` (`.claude/agents/game-planner.md`): planifica y decide qué juego retro encaja en la plataforma. Úsalo **antes** de `/add-game`. Lee el catálogo (`ids.ts`, `meta.ts`, `references/implemented-games.md`), las specs y `references/`, y puntúa de 3 a 5 candidatos según encaje competitivo, formato, contrato `GameFactory`/HUD, variedad, coste y estética/IP. Devuelve una recomendación y el comando `/add-game` sugerido. Solo recomienda: no escribe specs ni código.
+  - Tiene memoria persistente (`memory: project`) en `.claude/agent-memory/game-planner/`, versionada en git. `suggestions.md` guarda el historial de juegos evaluados con su estado (`sugerido` / `recomendado` / `aceptado` / `descartado` / `implementado`), y `MEMORY.md` las preferencias del usuario. No vuelve a sugerir juegos implementados ni descartados.
+  - Al implementar un juego nuevo, su estado se sincroniza solo la siguiente vez que se ejecuta el agente. Para descartar una idea, díselo al agente y lo anotará en su memoria.
