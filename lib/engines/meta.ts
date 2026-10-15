@@ -43,4 +43,13 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
       { keys: ["P", "ESC"], label: "Pausa" },
     ],
   },
+  snake: {
+    scoreStep: 10,
+    initialLives: null,
+    hud: ["level"],
+    controls: [
+      { keys: ["←", "↑", "→", "↓"], label: "Mover" },
+      { keys: ["P", "ESC"], label: "Pausa" },
+    ],
+  },
 };

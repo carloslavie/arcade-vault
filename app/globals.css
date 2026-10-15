@@ -755,22 +755,61 @@
     image-rendering: pixelated;
   }
 
+  /* A frame of the game an instant before the bite: same grid, colors and cells as the canvas.
+     Cell = 8cqmin, so one rule fits the card, the landing and the detail page.
+     Block layers: background-position calc(50% + L) centers the block at 50% + L. */
   .cover-snake {
+    container-type: size;
     background: linear-gradient(135deg, #003a2a, #0a0a18);
+    --c: 8cqmin;
+    --s: calc(var(--c) - 2px); /* segment, 1px gap on each side like the game */
+    --apple: calc(var(--c) * 1.9);
   }
   .cover-snake::after {
     content: "";
     position: absolute;
     inset: 0;
-    background-image:
-      radial-gradient(circle at 70% 50%, var(--magenta) 0 6px, transparent 7px),
-      linear-gradient(90deg, var(--green) 0 40px, transparent 40px) 20% 50% /
-        200px 12px no-repeat,
-      linear-gradient(90deg, var(--green) 0 12px, transparent 12px)
-        calc(20% + 40px) calc(50% - 12px) / 12px 12px no-repeat,
-      linear-gradient(90deg, var(--green) 0 12px, transparent 12px)
-        calc(20% + 28px) calc(50% - 12px) / 12px 12px no-repeat;
+    --seg: linear-gradient(var(--green) 0 0);
+    background:
+      linear-gradient(var(--ink) 0 0) calc(50% + 2.4 * var(--c)) 50% / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% + 1.4 * var(--c)) 50% / var(--s) var(--s) no-repeat,
+      var(--seg) calc(50% + 0.4 * var(--c)) 50% / var(--s) var(--s) no-repeat,
+      var(--seg) calc(50% + 0.4 * var(--c)) calc(50% - var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 0.6 * var(--c)) calc(50% - var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 1.6 * var(--c)) calc(50% - var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 2.6 * var(--c)) calc(50% - var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 2.6 * var(--c)) 50% / var(--s) var(--s) no-repeat,
+      var(--seg) calc(50% - 2.6 * var(--c)) calc(50% + var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 3.6 * var(--c)) calc(50% + var(--c)) / var(--s)
+        var(--s) no-repeat,
+      var(--seg) calc(50% - 4.6 * var(--c)) calc(50% + var(--c)) / var(--s)
+        var(--s) no-repeat,
+      /* board grid, aligned with the segments */
+        linear-gradient(90deg, rgba(0, 255, 136, 0.08) 1px, transparent 1px)
+        calc(50% + 0.4 * var(--c)) 50% / var(--c) var(--c),
+      linear-gradient(rgba(0, 255, 136, 0.08) 1px, transparent 1px)
+        calc(50% + 0.4 * var(--c)) 50% / var(--c) var(--c);
     filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.6));
+  }
+  /* First pixel-art fruit of the sheet (x 34, 110×160 of 3790×160), one cell ahead of the head */
+  .cover-snake::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: calc(var(--apple) * 0.6875);
+    height: var(--apple);
+    left: calc(50% + 4.4 * var(--c) - var(--apple) * 0.34375);
+    top: calc(50% - var(--apple) / 2);
+    background: url("/games/snake/fruits.png") calc(var(--apple) * -0.2125) 0 /
+      calc(var(--apple) * 23.6875) var(--apple) no-repeat;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 0 6px rgba(255, 59, 59, 0.55));
   }
 
   .cover-glot {
