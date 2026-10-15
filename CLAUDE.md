@@ -27,6 +27,7 @@ No test framework is set up yet. Verify UI changes in the browser (Playwright MC
 
 - `/` landing (`components/landing.tsx`, mock copy in `lib/home.ts`).
 - `/games` library: only playable games (`isPlayable`), with real stats per card.
+(see `implemented-games.md`) when you need to check wich games are implemented and how to implement new ones.
 - `/games/[id]` detail with real leaderboard; `/games/[id]/play` mounts `EnginePlayer` for playable games (fake `GamePlayer` otherwise). `play/actions.ts` holds the `saveScore` Server Action.
 - `/hall-of-fame?game=<id>` top 20 per playable game plus the current user's best row.
 - `/login` sign in / sign up (Server Actions in `login/actions.ts`, validation in `lib/auth.ts`).
