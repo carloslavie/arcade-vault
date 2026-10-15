@@ -1,5 +1,10 @@
 // Games with a real engine. No browser code here, so the server can import it.
-export const PLAYABLE_GAME_IDS = ["asteroids", "tetris", "arkanoid"] as const;
+export const PLAYABLE_GAME_IDS = [
+  "asteroids",
+  "tetris",
+  "arkanoid",
+  "snake",
+] as const;
 
 export type PlayableGameId = (typeof PLAYABLE_GAME_IDS)[number];
 
