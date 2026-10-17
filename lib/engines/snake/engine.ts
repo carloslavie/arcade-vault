@@ -270,6 +270,9 @@ export const createSnakeGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
+    setSkin() {
+      // Skins land in specs/skins/snake-skins.md
+    },
     destroy() {
       destroyed = true;
       img.onload = img.onerror = null;

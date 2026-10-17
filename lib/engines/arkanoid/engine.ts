@@ -315,6 +315,9 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
+    setSkin() {
+      // Skins land in specs/skins/arkanoid-skins.md
+    },
     destroy() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKeyDown);

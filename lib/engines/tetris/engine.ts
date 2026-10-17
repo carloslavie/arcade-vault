@@ -431,6 +431,9 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
+    setSkin() {
+      // Skins land in specs/skins/tetris-skins.md
+    },
     destroy() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKeyDown);

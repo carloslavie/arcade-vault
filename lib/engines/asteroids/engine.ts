@@ -362,6 +362,9 @@ export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
+    setSkin() {
+      // Skins land in specs/skins/asteroids-skins.md
+    },
     destroy() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKeyDown);
