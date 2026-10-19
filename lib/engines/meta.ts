@@ -40,7 +40,7 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
   arkanoid: {
     scoreStep: 10,
     initialLives: 3,
-    hasSkins: false,
+    hasSkins: true,
     hud: ["lives", "level"],
     controls: [
       { keys: ["←", "→", "RATÓN"], label: "Mover" },

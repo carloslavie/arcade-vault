@@ -1,5 +1,5 @@
 // Constants and pure helpers ported 1:1 from references/started-games/04-arkanoid/game.js.
-// Only the look changed: neon vector shapes instead of the sprite sheet.
+// Only the look changed: vector shapes instead of the sprite sheet, colored by the active skin.
 import type { BlockColor } from "./levels";
 
 export const W = 800;
@@ -46,26 +46,24 @@ export interface Explosion extends Rect {
   elapsed: number; // ms
 }
 
-// Original block color → neon tone. With a :root var the hex is its fallback;
-// red, hotpink and gray have no var and use the engine's own tones (red and gray as in Tetris).
-export const BLOCK_COLORS: Record<
-  BlockColor,
-  { cssVar?: string; hex: string }
-> = {
-  cyan: { cssVar: "--cyan", hex: "#00f5ff" },
-  yellow: { cssVar: "--yellow", hex: "#f5ff00" },
-  magenta: { cssVar: "--magenta", hex: "#ff006e" },
-  green: { cssVar: "--green", hex: "#00ff88" },
-  red: { hex: "#ff3b3b" },
-  hotpink: { hex: "#ff5ec8" },
-  gray: { hex: "#9aa7b8" },
-};
-
+// Resolved colors of the active skin
 export interface Palette {
-  blocks: Record<BlockColor, string>;
+  background: string;
   paddle: string;
+  paddleTrim: string; // paddle ends
   ball: string;
+  highlight: string; // top strip of blocks and explosions
+  shade: string; // bottom strip, only with bevel
+  blocks: Record<BlockColor, string>;
 }
+
+// Block render settings of the active skin
+export interface BlockStyle {
+  highlightHeight: number; // px, capped at h / 3
+  bevel: number; // px of bottom shade, 0 = none
+}
+
+const PADDLE_TRIM = 10; // px per end
 
 export function collideAABB(a: Rect, b: Rect) {
   return (
@@ -81,15 +79,24 @@ function drawRect(
   w: number,
   h: number,
   color: string,
+  palette: Palette,
+  style: BlockStyle,
 ) {
   ctx.shadowColor = color;
   ctx.fillStyle = color;
   ctx.fillRect(x, y, w, h);
-  // highlight, without glow
+  // highlight and bevel, without glow
   const blur = ctx.shadowBlur;
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.fillRect(x, y, w, Math.min(4, h / 3));
+  const top = Math.min(style.highlightHeight, h / 3);
+  if (top > 0) {
+    ctx.fillStyle = palette.highlight;
+    ctx.fillRect(x, y, w, top);
+  }
+  if (style.bevel > 0) {
+    ctx.fillStyle = palette.shade;
+    ctx.fillRect(x, y + h - style.bevel, w, style.bevel);
+  }
   ctx.shadowBlur = blur;
 }
 
@@ -97,16 +104,28 @@ export function drawBlock(
   ctx: CanvasRenderingContext2D,
   b: Rect,
   color: string,
+  palette: Palette,
+  style: BlockStyle,
 ) {
   const g = BLOCK_GAP / 2;
-  drawRect(ctx, b.x + g, b.y + g, b.w - BLOCK_GAP, b.h - BLOCK_GAP, color);
+  drawRect(
+    ctx,
+    b.x + g,
+    b.y + g,
+    b.w - BLOCK_GAP,
+    b.h - BLOCK_GAP,
+    color,
+    palette,
+    style,
+  );
 }
 
 // 4 discrete frames: the block grows and fades (alpha 1, 0.75, 0.5, 0.25)
 export function drawExplosion(
   ctx: CanvasRenderingContext2D,
   e: Explosion,
-  color: string,
+  palette: Palette,
+  style: BlockStyle,
 ) {
   const frame = Math.min(
     Math.floor((e.elapsed / EXPLOSION_DURATION) * EXPLOSION_FRAMES),
@@ -119,7 +138,9 @@ export function drawExplosion(
   drawBlock(
     ctx,
     { x: e.x - (w - e.w) / 2, y: e.y - (h - e.h) / 2, w, h },
-    color,
+    palette.blocks[e.color],
+    palette,
+    style,
   );
   ctx.globalAlpha = 1;
 }
@@ -127,13 +148,22 @@ export function drawExplosion(
 export function drawPaddle(
   ctx: CanvasRenderingContext2D,
   p: Rect,
-  color: string,
+  palette: Palette,
 ) {
-  ctx.shadowColor = color;
-  ctx.fillStyle = color;
+  ctx.shadowColor = palette.paddle;
+  ctx.fillStyle = palette.paddle;
   ctx.beginPath();
   ctx.roundRect(p.x, p.y, p.w, p.h, p.h / 2);
   ctx.fill();
+  if (palette.paddleTrim === palette.paddle) return;
+  // Trims clipped to the same capsule, without glow
+  ctx.save();
+  ctx.clip();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = palette.paddleTrim;
+  ctx.fillRect(p.x, p.y, PADDLE_TRIM, p.h);
+  ctx.fillRect(p.x + p.w - PADDLE_TRIM, p.y, PADDLE_TRIM, p.h);
+  ctx.restore();
 }
 
 export function drawBall(

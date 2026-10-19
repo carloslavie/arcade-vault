@@ -1,15 +1,17 @@
 // Arkanoid engine: game loop, state and input from game.js, per instance and without globals.
 // The platform draws the HUD, the pause and the game over; the canvas keeps only the playfield.
 
-import { SCORE_LIMITS } from "@/lib/scores";
+import { resolveColors } from "@/lib/engines/skin-colors";
+import type { SkinId } from "@/lib/engines/skins";
 import type { GameFactory, GamePhase, GameStats } from "@/lib/engines/types";
+import { SCORE_LIMITS } from "@/lib/scores";
 import {
   BALL_SIZE,
   type Ball,
   BASE_BALL_VX,
   BASE_BALL_VY,
   type Block,
-  BLOCK_COLORS,
+  type BlockStyle,
   BLOCK_H,
   BLOCK_W,
   BLOCKS_ORIGIN_X,
@@ -30,7 +32,8 @@ import {
   type Rect,
   W,
 } from "./entities";
-import { type BlockColor, LEVELS } from "./levels";
+import { LEVELS } from "./levels";
+import { ARKANOID_SKINS } from "./skins";
 
 // Keys that would scroll the page while the game listens
 const CAPTURED = new Set([
@@ -40,32 +43,29 @@ const CAPTURED = new Set([
   "ArrowRight",
   "Space",
 ]);
-const GLOW = 10;
 const BLOCK_POINTS = 10;
 
-// Neon palette from :root, falling back to the current hex values
-function readPalette(): Palette {
-  const css = getComputedStyle(document.documentElement);
-  const pick = (name: string, fallback: string) =>
-    css.getPropertyValue(name).trim() || fallback;
-  const blocks = {} as Record<BlockColor, string>;
-  for (const [color, { cssVar, hex }] of Object.entries(BLOCK_COLORS))
-    blocks[color as BlockColor] = cssVar ? pick(cssVar, hex) : hex;
-  return {
-    blocks,
-    paddle: pick("--cyan", "#00f5ff"),
-    ball: pick("--ink", "#e6e9ff"),
-  };
-}
-
-export const createArkanoidGame: GameFactory = (canvas, callbacks) => {
+export const createArkanoidGame: GameFactory = (canvas, callbacks, options) => {
   const ctx = canvas.getContext("2d")!;
   // Logic stays in 800×600; the backing store is scaled for sharp lines
   const dpr = window.devicePixelRatio || 1;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const palette = readPalette();
+  // Active skin: resolved colors plus render settings
+  let palette: Palette;
+  let glow: number;
+  let blockStyle: BlockStyle;
+  function applySkin(id: SkinId) {
+    const skin = ARKANOID_SKINS[id];
+    palette = {
+      ...resolveColors(skin.colors),
+      blocks: resolveColors(skin.blocks),
+    };
+    glow = skin.glow;
+    blockStyle = { highlightHeight: skin.highlightHeight, bevel: skin.bevel };
+  }
+  applySkin(options.skin);
 
   // ── Game state ──────────────────────────────────────────────────────────────
   let phase: GamePhase = "ready";
@@ -210,15 +210,16 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks) => {
   function draw() {
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, W, H);
 
     // Glow set once per group
-    ctx.shadowBlur = GLOW;
+    ctx.shadowBlur = glow;
     for (const b of blocks)
-      if (b.alive) drawBlock(ctx, b, palette.blocks[b.color]);
-    for (const e of explosions) drawExplosion(ctx, e, palette.blocks[e.color]);
-    drawPaddle(ctx, paddle, palette.paddle);
+      if (b.alive)
+        drawBlock(ctx, b, palette.blocks[b.color], palette, blockStyle);
+    for (const e of explosions) drawExplosion(ctx, e, palette, blockStyle);
+    drawPaddle(ctx, paddle, palette);
     drawBall(ctx, ball, palette.ball);
     ctx.shadowBlur = 0;
   }
@@ -315,8 +316,10 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
-    setSkin() {
-      // Skins land in specs/skins/arkanoid-skins.md
+    setSkin(id) {
+      applySkin(id);
+      // The loop does not draw in these phases
+      if (phase === "ready" || phase === "paused") draw();
     },
     destroy() {
       cancelAnimationFrame(raf);
