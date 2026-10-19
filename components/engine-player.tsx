@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { saveScore } from "@/app/games/[id]/play/actions";
+import { TouchControls } from "@/components/touch-controls";
 import { useUser } from "@/components/user-provider";
 import { ENGINES } from "@/lib/engines";
 import { isPlayable, type PlayableGameId } from "@/lib/engines/ids";
@@ -20,6 +21,7 @@ import type { GameInstance, GamePhase, GameStats } from "@/lib/engines/types";
 import type { Game } from "@/lib/games";
 import type { SaveScoreResult } from "@/lib/scores";
 import { readSkin, subscribeSkin, writeSkin } from "@/lib/skin-preference";
+import { releaseAll, tapKey } from "@/lib/touch-input";
 
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
 
@@ -42,6 +44,26 @@ function useIsTouch(): boolean | null {
     () => window.matchMedia(TOUCH_QUERY).matches,
     () => null,
   );
+}
+
+function subscribeFullscreen(onChange: () => void) {
+  document.addEventListener("fullscreenchange", onChange);
+  return () => document.removeEventListener("fullscreenchange", onChange);
+}
+
+// false on the server; iPhone Safari has no Fullscreen API
+function useFullscreen(): { enabled: boolean; active: boolean } {
+  const enabled = useSyncExternalStore(
+    subscribeFullscreen,
+    () => document.fullscreenEnabled === true,
+    () => false,
+  );
+  const active = useSyncExternalStore(
+    subscribeFullscreen,
+    () => document.fullscreenElement !== null,
+    () => false,
+  );
+  return { enabled, active };
 }
 
 // Stats before the engine emits anything: only the cells this game shows
@@ -108,6 +130,8 @@ export function EnginePlayer({ game }: { game: Game }) {
   // The page only renders EnginePlayer when isPlayable(game.id)
   const meta = GAME_META[game.id as PlayableGameId];
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
+  const fullscreen = useFullscreen();
   const instanceRef = useRef<GameInstance | null>(null);
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [stats, setStats] = useState(() => initialStats(meta));
@@ -150,7 +174,8 @@ export function EnginePlayer({ game }: { game: Game }) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (isTouch !== false || !canvas || !isPlayable(game.id)) return;
+    // Wait for hydration so touch and desktop never mount twice
+    if (isTouch === null || !canvas || !isPlayable(game.id)) return;
     const instance = ENGINES[game.id](
       canvas,
       {
@@ -165,6 +190,21 @@ export function EnginePlayer({ game }: { game: Game }) {
       instanceRef.current = null;
     };
   }, [isTouch, game.id]);
+
+  // A gamepad key held while leaving play would stick on resume
+  useEffect(() => {
+    if (phase !== "playing") releaseAll();
+  }, [phase]);
+
+  useEffect(() => {
+    if (!isTouch) return;
+    const onVisibilityChange = () => {
+      if (document.hidden) releaseAll();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [isTouch]);
 
   // Separate effect: changing the skin never recreates the engine
   useEffect(() => {
@@ -182,11 +222,87 @@ export function EnginePlayer({ game }: { game: Game }) {
     instanceRef.current?.restart();
   };
 
+  const toggleFullscreen = () => {
+    // A rejected request (no user gesture, blocked) just leaves the page as is
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else playerRef.current?.requestFullscreen().catch(() => {});
+  };
+
   const name = user?.name ?? "INVITADO";
   const canPause = phase === "playing" || phase === "paused";
 
+  const crt = (
+    <div className="crt">
+      <div className="crt-screen">
+        <canvas
+          ref={canvasRef}
+          className="game-canvas"
+          width={800}
+          height={600}
+          aria-label={`${game.title}: área de juego`}
+        />
+
+        {isTouch === true && phase === "ready" && (
+          <div
+            className="crt-overlay tap-start"
+            role="button"
+            tabIndex={0}
+            onClick={() => tapKey("Space")}
+          >
+            <div className="title">{game.title}</div>
+            <div className="prompt">TOCA PARA EMPEZAR</div>
+          </div>
+        )}
+
+        {isTouch === false && phase === "ready" && (
+          <div className="crt-overlay">
+            <div className="title">{game.title}</div>
+            <dl className="controls">
+              {meta.controls.map((c) => (
+                <div key={c.label} style={{ display: "contents" }}>
+                  <dt>
+                    {c.keys.map((k) => (
+                      <kbd key={k} className="keycap">
+                        {k}
+                      </kbd>
+                    ))}
+                  </dt>
+                  <dd>{c.label}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="prompt">PULSA ESPACIO PARA EMPEZAR</div>
+          </div>
+        )}
+
+        {phase === "paused" && (
+          <div className="crt-overlay">
+            <div className="title yellow">EN PAUSA</div>
+            <p className="hint">
+              {isTouch
+                ? "PULSA REANUDAR PARA CONTINUAR"
+                : "PULSA P, ESC O REANUDAR PARA CONTINUAR"}
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="crt-bottom">
+        <span className="led">SEÑAL OK</span>
+        {!isTouch && <span>{game.title} · CRT-83 · 60 HZ</span>}
+        {meta.hasSkins && skin ? (
+          <SkinPicker gameId={game.id} skin={skin} />
+        ) : (
+          <span>CARGA · 1MB</span>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="av-player fade-in">
+    <div
+      ref={playerRef}
+      className={`av-player fade-in${isTouch ? " is-touch" : ""}`}
+    >
       <div className="player-hud">
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           <div className="hud-stat">
@@ -217,74 +333,31 @@ export function EnginePlayer({ game }: { game: Game }) {
           <button
             className="btn magenta"
             onClick={() => instanceRef.current?.end()}
-            disabled={phase === "over" || isTouch !== false}
+            disabled={phase === "over"}
           >
             FIN
           </button>
+          {isTouch === true && fullscreen.enabled && (
+            <button className="btn ghost" onClick={toggleFullscreen}>
+              {fullscreen.active
+                ? "SALIR PANTALLA COMPLETA"
+                : "PANTALLA COMPLETA"}
+            </button>
+          )}
           <Link href={`/games/${game.id}`} className="btn ghost">
             SALIR
           </Link>
         </div>
       </div>
 
-      <div className="crt">
-        <div className="crt-screen">
-          <canvas
-            ref={canvasRef}
-            className="game-canvas"
-            width={800}
-            height={600}
-            aria-label={`${game.title}: área de juego`}
-          />
-
-          {isTouch === true && (
-            <div className="crt-overlay">
-              <div className="title magenta">REQUIERE TECLADO</div>
-              <p className="hint">
-                {game.title} SE JUEGA CON LAS FLECHAS Y LA BARRA ESPACIADORA.
-                ÁBRELO EN UN ORDENADOR PARA JUGAR.
-              </p>
-            </div>
-          )}
-
-          {isTouch === false && phase === "ready" && (
-            <div className="crt-overlay">
-              <div className="title">{game.title}</div>
-              <dl className="controls">
-                {meta.controls.map((c) => (
-                  <div key={c.label} style={{ display: "contents" }}>
-                    <dt>
-                      {c.keys.map((k) => (
-                        <kbd key={k} className="keycap">
-                          {k}
-                        </kbd>
-                      ))}
-                    </dt>
-                    <dd>{c.label}</dd>
-                  </div>
-                ))}
-              </dl>
-              <div className="prompt">PULSA ESPACIO PARA EMPEZAR</div>
-            </div>
-          )}
-
-          {phase === "paused" && (
-            <div className="crt-overlay">
-              <div className="title yellow">EN PAUSA</div>
-              <p className="hint">PULSA P, ESC O REANUDAR PARA CONTINUAR</p>
-            </div>
-          )}
+      {isTouch ? (
+        <div className="touch-stage">
+          {crt}
+          <TouchControls layout={meta.touch} />
         </div>
-        <div className="crt-bottom">
-          <span className="led">SEÑAL OK</span>
-          <span>{game.title} · CRT-83 · 60 HZ</span>
-          {meta.hasSkins && isTouch === false && skin ? (
-            <SkinPicker gameId={game.id} skin={skin} />
-          ) : (
-            <span>CARGA · 1MB</span>
-          )}
-        </div>
-      </div>
+      ) : (
+        crt
+      )}
 
       {phase === "over" && (
         <div className="modal-bd">

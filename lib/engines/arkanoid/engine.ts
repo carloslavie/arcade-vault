@@ -284,8 +284,8 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks, options) => {
     if (e.code === "ArrowLeft" || e.code === "ArrowRight") keys[e.code] = false;
   }
 
-  // CSS pixels of the scaled CRT → logical 800×600; the paddle centers on the cursor
-  function onMouseMove(e: MouseEvent) {
+  // CSS pixels of the scaled CRT → logical 800×600; the paddle centers on the cursor or finger
+  function onPointerMove(e: PointerEvent) {
     if (phase !== "playing") return;
     const rect = canvas.getBoundingClientRect();
     if (rect.width === 0) return;
@@ -305,7 +305,7 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks, options) => {
   window.addEventListener("keyup", onKeyUp);
   window.addEventListener("blur", onBlur);
   document.addEventListener("visibilitychange", onVisibilityChange);
-  canvas.addEventListener("mousemove", onMouseMove);
+  canvas.addEventListener("pointermove", onPointerMove);
 
   initGame();
   draw();
@@ -327,7 +327,7 @@ export const createArkanoidGame: GameFactory = (canvas, callbacks, options) => {
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      canvas.removeEventListener("mousemove", onMouseMove);
+      canvas.removeEventListener("pointermove", onPointerMove);
     },
   };
 };
