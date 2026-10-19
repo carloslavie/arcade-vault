@@ -1,6 +1,8 @@
 // Asteroids engine: game loop, state and input from game.js, per instance and without globals.
 // The platform draws the HUD and the game over; the canvas only keeps the 3x indicator.
 
+import { resolveColors } from "@/lib/engines/skin-colors";
+import type { SkinId } from "@/lib/engines/skins";
 import type { GameFactory, GamePhase, GameStats } from "@/lib/engines/types";
 import {
   Asteroid,
@@ -10,6 +12,7 @@ import {
   type Keys,
   type Palette,
   Particle,
+  type ParticleKind,
   POINTS,
   POWERUP_DROP_CHANCE,
   POWERUP_DURATION,
@@ -18,6 +21,7 @@ import {
   Ship,
   W,
 } from "./entities";
+import { ASTEROIDS_SKINS } from "./skins";
 
 // Keys that would scroll the page while the game listens
 const CAPTURED = new Set([
@@ -27,31 +31,29 @@ const CAPTURED = new Set([
   "ArrowRight",
   "Space",
 ]);
-const GLOW = 10;
-const PARTICLE_GLOW = 4;
 
-// Neon palette from :root, falling back to the current hex values
-function readPalette(): Palette {
-  const css = getComputedStyle(document.documentElement);
-  const pick = (name: string, fallback: string) =>
-    css.getPropertyValue(name).trim() || fallback;
-  return {
-    ship: pick("--cyan", "#00f5ff"),
-    asteroid: pick("--magenta", "#ff006e"),
-    bullet: pick("--yellow", "#f5ff00"),
-    powerUp: pick("--green", "#00ff88"),
-    flame: pick("--yellow", "#f5ff00"),
-  };
-}
-
-export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
+export const createAsteroidsGame: GameFactory = (
+  canvas,
+  callbacks,
+  options,
+) => {
   const ctx = canvas.getContext("2d")!;
   // Logic stays in 800×600; the backing store is scaled for sharp lines
   const dpr = window.devicePixelRatio || 1;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const palette = readPalette();
+  // Active skin: resolved colors plus glow levels
+  let palette: Palette;
+  let glow: number;
+  let particleGlow: number;
+  function applySkin(id: SkinId) {
+    const skin = ASTEROIDS_SKINS[id];
+    palette = resolveColors(skin.colors);
+    glow = skin.glow;
+    particleGlow = skin.particleGlow;
+  }
+  applySkin(options.skin);
 
   // ── Input ───────────────────────────────────────────────────────────────────
   const keys: Keys = {};
@@ -146,12 +148,12 @@ export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
     spawnAsteroids(3 + level);
   }
 
-  function explode(x: number, y: number, color: string, count = 8) {
-    for (let i = 0; i < count; i++) particles.push(new Particle(x, y, color));
+  function explode(x: number, y: number, kind: ParticleKind, count = 8) {
+    for (let i = 0; i < count; i++) particles.push(new Particle(x, y, kind));
   }
 
   function killShip() {
-    explode(ship.x, ship.y, palette.ship, 14);
+    explode(ship.x, ship.y, "ship", 14);
     ship.dead = true;
     lives--;
     if (lives <= 0) {
@@ -212,7 +214,7 @@ export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
           b.dead = true;
           a.dead = true;
           score += POINTS[a.size];
-          explode(a.x, a.y, palette.asteroid, a.size * 5);
+          explode(a.x, a.y, "asteroid", a.size * 5);
           newAsteroids.push(...a.split());
           if (!powerUpSpawned) {
             killsSinceSpawn++;
@@ -245,17 +247,17 @@ export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
   // ── Draw ────────────────────────────────────────────────────────────────────
   function draw() {
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, W, H);
 
     // Glow set once per group, not per entity
-    ctx.shadowBlur = PARTICLE_GLOW;
+    ctx.shadowBlur = particleGlow;
     particles.forEach((p) => {
-      ctx.shadowColor = p.color;
-      p.draw(ctx);
+      ctx.shadowColor = palette[p.kind];
+      p.draw(ctx, palette);
     });
 
-    ctx.shadowBlur = GLOW;
+    ctx.shadowBlur = glow;
     ctx.shadowColor = palette.asteroid;
     asteroids.forEach((a) => a.draw(ctx, palette));
     ctx.shadowColor = palette.powerUp;
@@ -362,6 +364,11 @@ export const createAsteroidsGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
+    setSkin(id) {
+      applySkin(id);
+      // The loop does not draw in these phases
+      if (phase === "ready" || phase === "paused") draw();
+    },
     destroy() {
       cancelAnimationFrame(raf);
       window.removeEventListener("keydown", onKeyDown);

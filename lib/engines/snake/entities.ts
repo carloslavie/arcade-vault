@@ -1,5 +1,5 @@
 // Constants and pure helpers for the Snake engine (SPEC 12, designed from scratch).
-// Neon vector snake on a 32×24 board; the fruit is a pixel-art sprite from sprites.ts.
+// Vector snake on a 32×24 board colored by the active skin; the fruit is a pixel-art sprite from sprites.ts.
 import type { SpriteRect } from "./sprites";
 
 export const W = 800;
@@ -16,7 +16,6 @@ export const FRUIT_POINTS = 10;
 export const MAX_QUEUED_TURNS = 2;
 
 const SEGMENT_INSET = 2;
-const GRID_ALPHA = 0.08;
 
 export interface Cell {
   x: number;
@@ -39,11 +38,13 @@ const OPPOSITE: Record<Dir, Dir> = {
   right: "left",
 };
 
+// Resolved colors of the active skin
 export interface Palette {
+  background: string;
+  grid: string;
   body: string;
   head: string;
-  grid: string;
-  fallbackFruit: string;
+  fruit: string; // fallback core, and the sprite silhouette in tint skins
 }
 
 // Head first; 3 segments in the middle of the board, facing right
@@ -90,9 +91,14 @@ export function randomFreeCell(snake: readonly Cell[]): Cell | null {
   return { x: i % COLS, y: Math.floor(i / COLS) };
 }
 
-export function drawGrid(ctx: CanvasRenderingContext2D, color: string) {
+export function drawGrid(
+  ctx: CanvasRenderingContext2D,
+  color: string,
+  alpha: number,
+) {
+  if (alpha === 0) return;
   ctx.save();
-  ctx.globalAlpha = GRID_ALPHA;
+  ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -140,11 +146,11 @@ export function drawSnake(
 }
 
 // Sprite centered in its cell, scaled to fit 25×25 keeping its proportions.
-// Without an image (not loaded or failed) it falls back to a neon core.
+// The image is the original atlas or its tinted copy; without one it falls back to a core.
 export function drawFruit(
   ctx: CanvasRenderingContext2D,
   cell: Cell,
-  image: HTMLImageElement | null,
+  image: CanvasImageSource | null,
   sprite: SpriteRect,
   palette: Palette,
   glow: number,
@@ -170,8 +176,8 @@ export function drawFruit(
     );
   } else {
     ctx.shadowBlur = glow;
-    ctx.shadowColor = palette.fallbackFruit;
-    ctx.fillStyle = palette.fallbackFruit;
+    ctx.shadowColor = palette.fruit;
+    ctx.fillStyle = palette.fruit;
     ctx.beginPath();
     ctx.arc(cx, cy, CELL * 0.32, 0, Math.PI * 2);
     ctx.fill();

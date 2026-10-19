@@ -1209,6 +1209,57 @@
     box-shadow: 0 0 6px var(--green);
   }
 
+  /* skin picker: bezel switches in .crt-bottom */
+  .skin-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .skin-picker-keys {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+  }
+  .skin-opt {
+    padding: 5px 9px;
+    font-family: var(--pixel);
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    color: var(--ink-faint);
+    background: transparent;
+    border: 1px solid transparent;
+    margin: -1px;
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      box-shadow 0.15s;
+  }
+  .skin-opt + .skin-opt {
+    border-left-color: var(--line);
+  }
+  .skin-opt:hover:not([aria-pressed="true"]) {
+    color: var(--ink);
+  }
+  .skin-opt[aria-pressed="true"] {
+    position: relative;
+    color: var(--cyan);
+    border-color: var(--cyan);
+    text-shadow: 0 0 6px rgba(0, 245, 255, 0.6);
+    box-shadow:
+      0 0 10px rgba(0, 245, 255, 0.3),
+      inset 0 0 8px rgba(0, 245, 255, 0.15);
+  }
+  .skin-opt:focus-visible {
+    position: relative;
+    outline: 1px solid var(--cyan);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skin-opt {
+      transition: none;
+    }
+  }
+
   /* fake in-screen game */
   .game-arena {
     position: absolute;

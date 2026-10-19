@@ -1,10 +1,11 @@
 // Entities ported 1:1 from references/started-games/02-asteroids/game.js.
-// Only the colors changed: they come from the platform's neon palette.
+// Only the colors changed: they come from the active skin (skins.ts).
 
 export const W = 800;
 export const H = 600;
 
 export interface Palette {
+  background: string;
   ship: string;
   asteroid: string;
   bullet: string;
@@ -289,6 +290,8 @@ export class Ship {
 }
 
 // ── Particles (explosion) ─────────────────────────────────────────────────────
+export type ParticleKind = "ship" | "asteroid";
+
 export class Particle {
   x: number;
   y: number;
@@ -296,13 +299,13 @@ export class Particle {
   vy: number;
   life: number;
   ttl: number;
-  color: string;
+  kind: ParticleKind; // color comes from the active palette, so skins apply mid-explosion
   dead = false;
 
-  constructor(x: number, y: number, color: string) {
+  constructor(x: number, y: number, kind: ParticleKind) {
     this.x = x;
     this.y = y;
-    this.color = color;
+    this.kind = kind;
     const angle = rand(0, Math.PI * 2);
     const speed = rand(30, 130);
     this.vx = Math.cos(angle) * speed;
@@ -318,9 +321,9 @@ export class Particle {
     if (this.ttl <= 0) this.dead = true;
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, palette: Palette) {
     ctx.globalAlpha = Math.max(this.ttl / this.life, 0);
-    ctx.strokeStyle = this.color;
+    ctx.strokeStyle = palette[this.kind];
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(this.x, this.y);

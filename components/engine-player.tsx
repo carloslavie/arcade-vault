@@ -15,9 +15,11 @@ import { useUser } from "@/components/user-provider";
 import { ENGINES } from "@/lib/engines";
 import { isPlayable, type PlayableGameId } from "@/lib/engines/ids";
 import { GAME_META, type GameMeta, type HudStat } from "@/lib/engines/meta";
+import { SKIN_IDS, SKIN_LABELS, type SkinId } from "@/lib/engines/skins";
 import type { GameInstance, GamePhase, GameStats } from "@/lib/engines/types";
 import type { Game } from "@/lib/games";
 import type { SaveScoreResult } from "@/lib/scores";
+import { readSkin, subscribeSkin, writeSkin } from "@/lib/skin-preference";
 
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
 
@@ -69,9 +71,40 @@ function hudValue(stat: HudStat, stats: GameStats): string {
   }
 }
 
+function SkinPicker({ gameId, skin }: { gameId: string; skin: SkinId }) {
+  return (
+    <span className="skin-picker" role="group" aria-label="Skin de pantalla">
+      <span>MODO</span>
+      <span className="skin-picker-keys">
+        {SKIN_IDS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            className="skin-opt"
+            aria-pressed={id === skin}
+            onClick={(e) => {
+              writeSkin(gameId, id);
+              // Keep Space for the game, not this button
+              e.currentTarget.blur();
+            }}
+          >
+            {SKIN_LABELS[id]}
+          </button>
+        ))}
+      </span>
+    </span>
+  );
+}
+
 export function EnginePlayer({ game }: { game: Game }) {
   const { user } = useUser();
   const isTouch = useIsTouch();
+  // null on the server and during hydration, like useIsTouch
+  const skin = useSyncExternalStore(
+    subscribeSkin,
+    () => readSkin(game.id),
+    () => null,
+  );
   // The page only renders EnginePlayer when isPlayable(game.id)
   const meta = GAME_META[game.id as PlayableGameId];
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -118,16 +151,25 @@ export function EnginePlayer({ game }: { game: Game }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (isTouch !== false || !canvas || !isPlayable(game.id)) return;
-    const instance = ENGINES[game.id](canvas, {
-      onStats: (s) => onStats(s),
-      onPhase: (p) => onPhase(p),
-    });
+    const instance = ENGINES[game.id](
+      canvas,
+      {
+        onStats: (s) => onStats(s),
+        onPhase: (p) => onPhase(p),
+      },
+      { skin: readSkin(game.id) },
+    );
     instanceRef.current = instance;
     return () => {
       instance.destroy();
       instanceRef.current = null;
     };
   }, [isTouch, game.id]);
+
+  // Separate effect: changing the skin never recreates the engine
+  useEffect(() => {
+    if (skin) instanceRef.current?.setSkin(skin);
+  }, [skin]);
 
   const togglePause = () => {
     if (phase === "paused") instanceRef.current?.resume();
@@ -236,7 +278,11 @@ export function EnginePlayer({ game }: { game: Game }) {
         <div className="crt-bottom">
           <span className="led">SEÑAL OK</span>
           <span>{game.title} · CRT-83 · 60 HZ</span>
-          <span>CARGA · 1MB</span>
+          {meta.hasSkins && isTouch === false && skin ? (
+            <SkinPicker gameId={game.id} skin={skin} />
+          ) : (
+            <span>CARGA · 1MB</span>
+          )}
         </div>
       </div>
 
