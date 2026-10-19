@@ -1,0 +1,96 @@
+// Canvas skins for Ranaria (SPEC 19). Cosmetic only: same world, sizes and rules.
+import type { SkinDef, SkinId } from "@/lib/engines/skins";
+
+import type { Palette, Render } from "./entities";
+
+export type RanariaSkin = SkinDef<keyof Palette> & Omit<Render, "glow">;
+
+export const RANARIA_SKINS: Record<SkinId, RanariaSkin> = {
+  // Original road-crossing arcade: purple sidewalks, blue river, no glow or lane lines
+  clasico: {
+    colors: {
+      background: "#000000",
+      grass: "#5a1e8c",
+      laneLine: "#ffffff",
+      river: "#000066",
+      hedge: "#063806",
+      lily: "#2ecc40",
+      frog: "#66ff33",
+      eye: "#ffffff",
+      log: "#b5651d",
+      turtle: "#e8262b",
+      car1: "#ffe14d",
+      car2: "#ff4fd8",
+      car3: "#4dd2ff",
+      truck: "#f0f0f0",
+      tide: "#3d8bff",
+      crestAlt: "#ffffff",
+      hit: "#ff3b30",
+      splash: "#3d8bff",
+    },
+    glow: 0,
+    grassAlpha: 1,
+    hedgeAlpha: 1,
+    laneLineAlpha: 0,
+    logFillAlpha: 1,
+    tideAlpha: 0.35,
+  },
+  // Platform neon, the game-jam look
+  neon: {
+    colors: {
+      background: "#000000",
+      grass: { cssVar: "--green", fallback: "#00ff88" },
+      laneLine: { cssVar: "--ink", fallback: "#e6e9ff" },
+      river: "#001a2e",
+      hedge: { cssVar: "--green", fallback: "#00ff88" },
+      lily: { cssVar: "--green", fallback: "#00ff88" },
+      frog: { cssVar: "--green", fallback: "#00ff88" },
+      eye: { cssVar: "--ink", fallback: "#e6e9ff" },
+      log: "#ff9f1c",
+      turtle: "#ff3b3b",
+      car1: { cssVar: "--cyan", fallback: "#00f5ff" },
+      car2: { cssVar: "--yellow", fallback: "#f5ff00" },
+      car3: { cssVar: "--magenta", fallback: "#ff006e" },
+      truck: "#ff9f1c",
+      tide: { cssVar: "--cyan", fallback: "#00f5ff" },
+      crestAlt: { cssVar: "--magenta", fallback: "#ff006e" },
+      hit: { cssVar: "--magenta", fallback: "#ff006e" },
+      splash: { cssVar: "--cyan", fallback: "#00f5ff" },
+    },
+    glow: 10,
+    grassAlpha: 0.1,
+    hedgeAlpha: 0.25,
+    laneLineAlpha: 0.15,
+    logFillAlpha: 0.25,
+    tideAlpha: 0.25,
+  },
+  // Amber phosphor monitor, soft glow
+  retro: {
+    colors: {
+      background: "#0b0700",
+      grass: "#3a2400",
+      laneLine: "#7a4f00",
+      river: "#1c1100",
+      hedge: "#5c3a00",
+      lily: "#ffb000",
+      frog: "#ffe2a6",
+      eye: "#0b0700",
+      log: "#9a6400",
+      turtle: "#c88a00",
+      car1: "#ffb000",
+      car2: "#ffb000",
+      car3: "#ffb000",
+      truck: "#ffcc55",
+      tide: "#ffb000",
+      crestAlt: "#ffe2a6",
+      hit: "#ffe2a6",
+      splash: "#ffb000",
+    },
+    glow: 4,
+    grassAlpha: 1,
+    hedgeAlpha: 1,
+    laneLineAlpha: 0.6,
+    logFillAlpha: 1,
+    tideAlpha: 0.3,
+  },
+};

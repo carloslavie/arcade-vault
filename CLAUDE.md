@@ -43,7 +43,7 @@ No test framework is set up yet. Verify UI changes in the browser (Playwright MC
 
 ### Game engines (`lib/engines/`)
 
-Playable games today: **asteroids, tetris, arkanoid, snake**. Each lives in `lib/engines/<id>/` (`engine.ts` + `entities.ts`, plus extras like `levels.ts`/`sprites.ts`), is framework-free canvas code and implements the contract in `types.ts` (`GameFactory(canvas, callbacks) → GameInstance` with `pause/resume/end/restart/destroy`, reporting `onStats` / `onPhase`).
+Playable games today: **asteroids, tetris, arkanoid, snake, ranaria**. Each lives in `lib/engines/<id>/` (`engine.ts` + `entities.ts`, plus extras like `levels.ts`/`sprites.ts`/`generator.ts`), is framework-free canvas code and implements the contract in `types.ts` (`GameFactory(canvas, callbacks) → GameInstance` with `pause/resume/end/restart/destroy`, reporting `onStats` / `onPhase`).
 
 - `ids.ts`: `PLAYABLE_GAME_IDS` + `isPlayable` (server-safe; gates library, hall of fame, play page and score validation).
 - `meta.ts`: `GAME_META` per game (`scoreStep`, `initialLives`, `hasSkins`, HUD cells, controls table, `touch` gamepad layout). Server-safe; `lib/scores.ts` validates scores against `scoreStep`.

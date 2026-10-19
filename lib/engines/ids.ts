@@ -4,6 +4,7 @@ export const PLAYABLE_GAME_IDS = [
   "tetris",
   "arkanoid",
   "snake",
+  "ranaria",
 ] as const;
 
 export type PlayableGameId = (typeof PLAYABLE_GAME_IDS)[number];

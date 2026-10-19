@@ -139,4 +139,26 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
       right: null,
     },
   },
+  ranaria: {
+    scoreStep: 10,
+    initialLives: null,
+    hasSkins: true,
+    hud: ["level"],
+    controls: [
+      { keys: ["←", "↑", "→", "↓"], label: "Saltar" },
+      { keys: ["P", "ESC"], label: "Pausa" },
+    ],
+    touch: {
+      left: {
+        kind: "dpad",
+        buttons: [
+          { code: "ArrowUp", label: "▲", aria: "Saltar arriba" },
+          { code: "ArrowLeft", label: "◀", aria: "Saltar a la izquierda" },
+          { code: "ArrowRight", label: "▶", aria: "Saltar a la derecha" },
+          { code: "ArrowDown", label: "▼", aria: "Saltar abajo" },
+        ],
+      },
+      right: null,
+    },
+  },
 };

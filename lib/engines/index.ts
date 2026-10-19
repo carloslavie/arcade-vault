@@ -1,6 +1,7 @@
 // Client-only registry: the Record type keeps it in sync with PLAYABLE_GAME_IDS
 import { createArkanoidGame } from "@/lib/engines/arkanoid/engine";
 import { createAsteroidsGame } from "@/lib/engines/asteroids/engine";
+import { createRanariaGame } from "@/lib/engines/ranaria/engine";
 import { createSnakeGame } from "@/lib/engines/snake/engine";
 import { createTetrisGame } from "@/lib/engines/tetris/engine";
 import type { PlayableGameId } from "@/lib/engines/ids";
@@ -11,4 +12,5 @@ export const ENGINES: Record<PlayableGameId, GameFactory> = {
   tetris: createTetrisGame,
   arkanoid: createArkanoidGame,
   snake: createSnakeGame,
+  ranaria: createRanariaGame,
 };
