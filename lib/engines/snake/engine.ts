@@ -1,8 +1,11 @@
 // Snake engine (SPEC 12): state, input and step loop per instance, without globals.
-// The platform draws the HUD, the pause and the game over; the canvas keeps only the board.
+// The platform draws the HUD, the pause and the game over; the canvas keeps only the board,
+// colored by the active skin (SPEC 16).
 
-import { SCORE_LIMITS } from "@/lib/scores";
+import { resolveColors } from "@/lib/engines/skin-colors";
+import type { SkinId } from "@/lib/engines/skins";
 import type { GameFactory, GamePhase, GameStats } from "@/lib/engines/types";
+import { SCORE_LIMITS } from "@/lib/scores";
 import {
   type Cell,
   type Dir,
@@ -23,6 +26,7 @@ import {
   stepCell,
   W,
 } from "./entities";
+import { type SnakeSkin, SNAKE_SKINS } from "./skins";
 import { FRUIT_SPRITE_SRC, FRUITS } from "./sprites";
 
 // Keys that would scroll the page while the game listens
@@ -39,41 +43,57 @@ const ARROW_DIRS: Record<string, Dir> = {
   ArrowLeft: "left",
   ArrowRight: "right",
 };
-const GLOW = 10;
-
-// Neon palette from :root, falling back to the current hex values
-function readPalette(): Palette {
-  const css = getComputedStyle(document.documentElement);
-  const pick = (name: string, fallback: string) =>
-    css.getPropertyValue(name).trim() || fallback;
-  const green = pick("--green", "#00ff88");
-  return {
-    body: green,
-    head: pick("--ink", "#e6e9ff"),
-    grid: green,
-    fallbackFruit: pick("--magenta", "#ff006e"),
-  };
-}
-
-export const createSnakeGame: GameFactory = (canvas, callbacks) => {
+export const createSnakeGame: GameFactory = (canvas, callbacks, options) => {
   const ctx = canvas.getContext("2d")!;
   // Logic stays in 800×600; the backing store is scaled for sharp lines
   const dpr = window.devicePixelRatio || 1;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const palette = readPalette();
-
+  // Active skin: resolved colors plus render settings
+  let palette: Palette;
+  let glow: number;
+  let gridAlpha: number;
+  let fruitStyle: SnakeSkin["fruitStyle"];
   // ── Fruit sprite ────────────────────────────────────────────────────────────
-  // Space waits until it loads or fails; on failure the fruit is a neon core
+  // Space waits until it loads or fails; on failure the fruit is a fallback core
   let destroyed = false;
   let spriteSettled = false;
   let spriteImage: HTMLImageElement | null = null;
+  let tintedAtlas: HTMLCanvasElement | null = null; // one-tone copy for tint skins
+
+  // Same-size copy of the atlas filled with the fruit color (source-in keeps the alpha)
+  function tintAtlas() {
+    tintedAtlas = null;
+    if (fruitStyle !== "tint" || !spriteImage) return;
+    const atlas = document.createElement("canvas");
+    atlas.width = spriteImage.naturalWidth;
+    atlas.height = spriteImage.naturalHeight;
+    const actx = atlas.getContext("2d")!;
+    actx.imageSmoothingEnabled = false;
+    actx.drawImage(spriteImage, 0, 0);
+    actx.globalCompositeOperation = "source-in";
+    actx.fillStyle = palette.fruit;
+    actx.fillRect(0, 0, atlas.width, atlas.height);
+    tintedAtlas = atlas;
+  }
+
+  function applySkin(id: SkinId) {
+    const skin = SNAKE_SKINS[id];
+    palette = resolveColors(skin.colors);
+    glow = skin.glow;
+    gridAlpha = skin.gridAlpha;
+    fruitStyle = skin.fruitStyle;
+    tintAtlas();
+  }
+  applySkin(options.skin);
+
   const img = new Image();
   img.onload = () => {
     if (destroyed) return;
     spriteImage = img;
     spriteSettled = true;
+    tintAtlas();
     draw();
   };
   img.onerror = () => {
@@ -175,13 +195,20 @@ export const createSnakeGame: GameFactory = (canvas, callbacks) => {
   function draw() {
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, W, H);
 
-    drawGrid(ctx, palette.grid);
+    drawGrid(ctx, palette.grid, gridAlpha);
     if (fruit && spriteSettled)
-      drawFruit(ctx, fruit, spriteImage, FRUITS[fruitSprite], palette, GLOW);
-    drawSnake(ctx, snake, palette, GLOW);
+      drawFruit(
+        ctx,
+        fruit,
+        fruitStyle === "tint" ? tintedAtlas : spriteImage,
+        FRUITS[fruitSprite],
+        palette,
+        glow,
+      );
+    drawSnake(ctx, snake, palette, glow);
   }
 
   // ── Main loop ───────────────────────────────────────────────────────────────
@@ -270,8 +297,10 @@ export const createSnakeGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
-    setSkin() {
-      // Skins land in specs/skins/snake-skins.md
+    setSkin(id) {
+      applySkin(id);
+      // The loop does not draw in these phases
+      if (phase === "ready" || phase === "paused") draw();
     },
     destroy() {
       destroyed = true;

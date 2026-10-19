@@ -1,6 +1,6 @@
 # SPEC 16 — Skins de SNAKE
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 13, SPEC 12
 > **Fecha:** 2026-10-19
 > **Objetivo:** Dar a Snake sus 3 skins de canvas (`clasico` por defecto, `neon` y `retro`) con paletas completas en `lib/engines/snake/skins.ts`, seleccionables en caliente desde el player, con el mismo patrón que SPEC 14 (Asteroids).
@@ -42,7 +42,7 @@ Esta spec completa la paleta, define las 3 skins y activa el selector de SPEC 13
 
 **Fuera de alcance (para futuras specs):**
 
-- Skins de Tetris y Arkanoid.
+- Skins de Tetris (Arkanoid ya las tiene en SPEC 15).
 - Sprites para la serpiente (cabeza, cuerpo, cola) o formas distintas por skin.
 - Fondo a cuadros tipo césped.
 - Filas emoji o realista de la hoja de frutas.
@@ -145,7 +145,7 @@ Requiere SPEC 13 implementada (`SkinId`, `SkinDef`, `resolveColors`, `setSkin` e
 - [ ] `engine.ts` y `entities.ts` no contienen ningún color literal (`"#000"`, hex ni `rgba`) fuera de `skins.ts`.
 - [ ] `clasico` es la skin por defecto: con `localStorage` vacío, `/games/snake/play` muestra fondo negro sin rejilla, cuerpo gris claro, cabeza blanca, frutas a todo color y sin glow.
 - [ ] Con `neon`, el canvas es idéntico al de antes de esta spec (cuerpo verde, cabeza blanco azulado, rejilla verde tenue, glow 10, frutas a todo color).
-- [ ] Con `retro`, todo el canvas usa solo los 4 tonos de la tabla, con el fondo `#c4cfa1` y la fruta como silueta `#1f2a14`.
+- [ ] Con `retro`, todo el canvas usa solo los 4 tonos de la tabla (más los tonos intermedios que deja la rejilla al pintarse con `gridAlpha = 0.4` sobre el fondo), con el fondo `#c4cfa1` y la fruta como silueta `#1f2a14`.
 - [ ] Con `retro`, ninguna fruta muestra trozos de las frutas vecinas del atlas.
 - [ ] Bloqueando la carga de `/games/snake/fruits.png`, cada skin pinta el núcleo de respaldo con su color `fruit` y el juego se puede jugar.
 - [ ] El selector muestra `CLÁSICO`, `NEÓN` y `RETRO`, y el botón activo tiene `aria-pressed="true"`.
@@ -159,7 +159,7 @@ Requiere SPEC 13 implementada (`SkinId`, `SkinDef`, `resolveColors`, `setSkin` e
 - [ ] Una partida con cualquier skin se guarda en `scores` igual que hoy y `saveScore` sigue validando con `scoreStep = 10`.
 - [ ] El HUD React, los overlays de la CRT y el modal de fin se ven igual en las 3 skins.
 - [ ] La consola no muestra errores ni avisos de hidratación en `/games/snake/play`.
-- [ ] Asteroids conserva sus 3 skins, y Tetris y Arkanoid no muestran selector y se ven igual que antes.
+- [ ] Asteroids y Arkanoid (SPEC 15) conservan sus 3 skins, y Tetris no muestra selector y se ve igual que antes.
 
 ---
 
@@ -203,7 +203,7 @@ Requiere SPEC 13 implementada (`SkinId`, `SkinDef`, `resolveColors`, `setSkin` e
 
 ## Lo que **no** entra en esta spec
 
-- Skins de Tetris y Arkanoid.
+- Skins de Tetris (Arkanoid ya las tiene en SPEC 15).
 - Sprites, formas o tamaños de la serpiente distintos por skin.
 - Fondo a cuadros tipo césped.
 - Filas emoji o realista del atlas de frutas.

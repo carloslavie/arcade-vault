@@ -50,7 +50,7 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
   snake: {
     scoreStep: 10,
     initialLives: null,
-    hasSkins: false,
+    hasSkins: true,
     hud: ["level"],
     controls: [
       { keys: ["←", "↑", "→", "↓"], label: "Mover" },
