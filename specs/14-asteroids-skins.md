@@ -1,6 +1,6 @@
 # SPEC 14 — Skins de ASTEROIDS
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 13, SPEC 05
 > **Fecha:** 2026-10-16
 > **Objetivo:** Dar a Asteroids sus 3 skins de canvas (`clasico` por defecto, `neon` y `retro`) con paletas completas en `lib/engines/asteroids/skins.ts`, seleccionables en caliente desde el player.

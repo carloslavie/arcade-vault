@@ -1,6 +1,6 @@
 # SPEC 13 — Plataforma de skins
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 05, SPEC 10, SPEC 11, SPEC 12
 > **Fecha:** 2026-10-16
 > **Objetivo:** Crear el mecanismo genérico para que cada motor reciba y cambie en caliente una skin cosmética (`clasico`, `neon`, `retro`) elegida en el player y recordada por juego en `localStorage`.
