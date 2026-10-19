@@ -1,5 +1,5 @@
 // Board, pieces and pure helpers ported 1:1 from references/started-games/03-tetris/game.js.
-// Only the colors changed: they come from the platform's neon palette.
+// Only the colors changed: they come from the active skin.
 
 export const W = 800;
 export const H = 600;
@@ -24,8 +24,43 @@ export interface Piece {
   y: number;
 }
 
-// Color per piece type (index 1–8); index 0 is the empty cell
-export type Palette = string[];
+export type PieceName = "I" | "O" | "T" | "S" | "Z" | "J" | "L" | "N";
+
+// Board cell value (1–8, in PIECES order) → piece name; index 0 is the empty cell
+export const PIECE_NAMES: readonly (PieceName | null)[] = [
+  null,
+  "I",
+  "O",
+  "T",
+  "S",
+  "Z",
+  "J",
+  "L",
+  "N",
+];
+
+// "core" paints a background-colored hole in the middle of the block
+export type BlockMark = "none" | "core";
+
+// Resolved colors of the active skin
+export interface Palette {
+  background: string;
+  grid: string;
+  frame: string; // board border and next box
+  label: string; // SIGUIENTE
+  highlight: string; // top strip of each block
+  pieces: Record<PieceName, string>;
+}
+
+// Block render settings of the active skin
+export interface BlockStyle {
+  highlight: string;
+  highlightHeight: number; // px, 0 = none
+  mark: BlockMark;
+  background: string; // core hole color
+}
+
+const CORE_SIZE = 10;
 
 export const PIECES: (Shape | null)[] = [
   null,
@@ -119,17 +154,31 @@ export function drawBlock(
   y: number,
   color: string,
   size: number,
+  style: BlockStyle,
   alpha = 1,
 ) {
+  const px = ox + x * size;
+  const py = oy + y * size;
   ctx.globalAlpha = alpha;
   ctx.shadowColor = color;
   ctx.fillStyle = color;
-  ctx.fillRect(ox + x * size + 1, oy + y * size + 1, size - 2, size - 2);
-  // highlight, without glow
+  ctx.fillRect(px + 1, py + 1, size - 2, size - 2);
+  // highlight and core hole, without glow
   const blur = ctx.shadowBlur;
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  ctx.fillRect(ox + x * size + 1, oy + y * size + 1, size - 2, 4);
+  if (style.highlightHeight > 0) {
+    ctx.fillStyle = style.highlight;
+    ctx.fillRect(px + 1, py + 1, size - 2, style.highlightHeight);
+  }
+  if (style.mark === "core") {
+    ctx.fillStyle = style.background;
+    ctx.fillRect(
+      px + (size - CORE_SIZE) / 2,
+      py + (size - CORE_SIZE) / 2,
+      CORE_SIZE,
+      CORE_SIZE,
+    );
+  }
   ctx.shadowBlur = blur;
   ctx.globalAlpha = 1;
 }

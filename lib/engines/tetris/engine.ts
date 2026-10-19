@@ -1,8 +1,11 @@
 // Tetris engine: game loop, state and input from game.js, per instance and without globals.
-// The platform draws the HUD and the game over; the canvas keeps the board, the ghost and the next piece.
+// The platform draws the HUD and the game over; the canvas keeps the board, the ghost and the next piece,
+// colored by the active skin (SPEC 17).
 
-import { SCORE_LIMITS } from "@/lib/scores";
+import { resolveColors } from "@/lib/engines/skin-colors";
+import type { SkinId } from "@/lib/engines/skins";
 import type { GameFactory, GamePhase, GameStats } from "@/lib/engines/types";
+import { SCORE_LIMITS } from "@/lib/scores";
 import {
   BLOCK,
   type Board,
@@ -14,13 +17,17 @@ import {
   drawBlock,
   H,
   LINE_SCORES,
+  type BlockStyle,
   type Palette,
+  PIECE_NAMES,
+  type PieceName,
   type Piece,
   randomPiece,
   rotateCW,
   ROWS,
   W,
 } from "./entities";
+import { TETRIS_SKINS } from "./skins";
 
 // Keys that would scroll the page while the game listens
 const CAPTURED = new Set([
@@ -31,49 +38,57 @@ const CAPTURED = new Set([
   "Space",
 ]);
 const KICKS = [0, -1, 1, -2, 2];
-const GLOW = 8;
 const NEXT_SIZE = 4 * BLOCK; // 4×4 cells, like the original 120×120 preview
 const NEXT_X = BOARD_X + COLS * BLOCK + 40;
 const NEXT_Y = 70;
 
-interface Theme {
-  pieces: Palette;
-  frame: string; // grid, board border and next box
-  pixelFont: string;
+// Label font from :root; typography is not part of the skin
+function readPixelFont() {
+  return (
+    getComputedStyle(document.documentElement)
+      .getPropertyValue("--pixel")
+      .trim() || "monospace"
+  );
 }
 
-// Neon palette from :root, falling back to the current hex values.
-// Z, J, L and N have no :root var: they use the engine's own neon tones.
-function readTheme(): Theme {
-  const css = getComputedStyle(document.documentElement);
-  const pick = (name: string, fallback: string) =>
-    css.getPropertyValue(name).trim() || fallback;
-  const cyan = pick("--cyan", "#00f5ff");
-  return {
-    pieces: [
-      "",
-      cyan, // I
-      pick("--yellow", "#f5ff00"), // O
-      pick("--magenta", "#ff006e"), // T
-      pick("--green", "#00ff88"), // S
-      "#ff3b3b", // Z - red
-      "#3d7bff", // J - blue
-      "#ff8a00", // L - orange
-      "#9aa7b8", // N - steel gray
-    ],
-    frame: cyan,
-    pixelFont: pick("--pixel", "monospace"),
-  };
-}
-
-export const createTetrisGame: GameFactory = (canvas, callbacks) => {
+export const createTetrisGame: GameFactory = (canvas, callbacks, options) => {
   const ctx = canvas.getContext("2d")!;
   // Logic stays in 800×600; the backing store is scaled for sharp lines
   const dpr = window.devicePixelRatio || 1;
   canvas.width = W * dpr;
   canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const theme = readTheme();
+  const pixelFont = readPixelFont();
+
+  // Active skin: resolved colors, per-piece block styles and render settings
+  let palette: Palette;
+  let styles: Record<PieceName, BlockStyle>;
+  let glow: number;
+  let gridAlpha: number;
+  let frameAlpha: number;
+  let ghostAlpha: number;
+  function applySkin(id: SkinId) {
+    const skin = TETRIS_SKINS[id];
+    palette = {
+      ...resolveColors(skin.colors),
+      pieces: resolveColors(skin.pieces),
+    };
+    styles = {} as Record<PieceName, BlockStyle>;
+    for (const name of Object.keys(skin.marks) as PieceName[])
+      styles[name] = {
+        highlight: palette.highlight,
+        highlightHeight: skin.highlightHeight,
+        mark: skin.marks[name],
+        background: palette.background,
+      };
+    glow = skin.glow;
+    gridAlpha = skin.gridAlpha;
+    frameAlpha = skin.frameAlpha;
+    ghostAlpha = skin.ghostAlpha;
+  }
+  applySkin(options.skin);
+  const colorOf = (cell: number) => palette.pieces[PIECE_NAMES[cell]!];
+  const styleOf = (cell: number) => styles[PIECE_NAMES[cell]!];
 
   // ── Game state ──────────────────────────────────────────────────────────────
   let phase: GamePhase = "ready";
@@ -219,10 +234,10 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
   // ── Draw ────────────────────────────────────────────────────────────────────
   function drawFrame() {
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = theme.frame;
+    ctx.strokeStyle = palette.grid;
 
     // grid
-    ctx.globalAlpha = 0.08;
+    ctx.globalAlpha = gridAlpha;
     ctx.lineWidth = 0.5;
     ctx.beginPath();
     for (let c = 1; c < COLS; c++) {
@@ -236,7 +251,8 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
     ctx.stroke();
 
     // board border and next box
-    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = palette.frame;
+    ctx.globalAlpha = frameAlpha;
     ctx.lineWidth = 1;
     ctx.strokeRect(
       BOARD_X + 0.5,
@@ -247,8 +263,8 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
     ctx.strokeRect(NEXT_X + 0.5, NEXT_Y + 0.5, NEXT_SIZE - 1, NEXT_SIZE - 1);
     ctx.globalAlpha = 1;
 
-    ctx.fillStyle = theme.frame;
-    ctx.font = `10px ${theme.pixelFont}`;
+    ctx.fillStyle = palette.label;
+    ctx.font = `10px ${pixelFont}`;
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillText("SIGUIENTE", NEXT_X, NEXT_Y - 14);
@@ -267,20 +283,21 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
             NEXT_Y,
             offX + c,
             offY + r,
-            theme.pieces[shape[r][c]],
+            colorOf(shape[r][c]),
             BLOCK,
+            styleOf(shape[r][c]),
           );
   }
 
   function draw() {
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#000";
+    ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, W, H);
     drawFrame();
 
     // Glow set once for the placed blocks, the current piece and the preview
-    ctx.shadowBlur = GLOW;
+    ctx.shadowBlur = glow;
     for (let r = 0; r < ROWS; r++)
       for (let c = 0; c < COLS; c++)
         if (board[r][c])
@@ -290,8 +307,9 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
             BOARD_Y,
             c,
             r,
-            theme.pieces[board[r][c]],
+            colorOf(board[r][c]),
             BLOCK,
+            styleOf(board[r][c]),
           );
 
     if (current) {
@@ -307,11 +325,12 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
               BOARD_Y,
               x + c,
               gy + r,
-              theme.pieces[shape[r][c]],
+              colorOf(shape[r][c]),
               BLOCK,
-              0.2,
+              styleOf(shape[r][c]),
+              ghostAlpha,
             );
-      ctx.shadowBlur = GLOW;
+      ctx.shadowBlur = glow;
       for (let r = 0; r < shape.length; r++)
         for (let c = 0; c < shape[r].length; c++)
           if (shape[r][c])
@@ -321,8 +340,9 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
               BOARD_Y,
               x + c,
               y + r,
-              theme.pieces[shape[r][c]],
+              colorOf(shape[r][c]),
               BLOCK,
+              styleOf(shape[r][c]),
             );
     }
 
@@ -431,8 +451,10 @@ export const createTetrisGame: GameFactory = (canvas, callbacks) => {
     resume,
     end,
     restart,
-    setSkin() {
-      // Skins land in specs/skins/tetris-skins.md
+    setSkin(id) {
+      applySkin(id);
+      // The loop does not draw in these phases
+      if (phase === "ready" || phase === "paused") draw();
     },
     destroy() {
       cancelAnimationFrame(raf);

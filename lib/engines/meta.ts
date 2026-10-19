@@ -27,7 +27,7 @@ export const GAME_META: Record<PlayableGameId, GameMeta> = {
   tetris: {
     scoreStep: 1,
     initialLives: null,
-    hasSkins: false,
+    hasSkins: true,
     hud: ["lines", "level"],
     controls: [
       { keys: ["←", "→"], label: "Mover" },
