@@ -46,9 +46,9 @@ No test framework is set up yet. Verify UI changes in the browser (Playwright MC
 Playable games today: **asteroids, tetris, arkanoid, snake**. Each lives in `lib/engines/<id>/` (`engine.ts` + `entities.ts`, plus extras like `levels.ts`/`sprites.ts`), is framework-free canvas code and implements the contract in `types.ts` (`GameFactory(canvas, callbacks) → GameInstance` with `pause/resume/end/restart/destroy`, reporting `onStats` / `onPhase`).
 
 - `ids.ts`: `PLAYABLE_GAME_IDS` + `isPlayable` (server-safe; gates library, hall of fame, play page and score validation).
-- `meta.ts`: `GAME_META` per game (`scoreStep`, `initialLives`, HUD cells, controls table). Server-safe; `lib/scores.ts` validates scores against `scoreStep`.
+- `meta.ts`: `GAME_META` per game (`scoreStep`, `initialLives`, `hasSkins`, HUD cells, controls table, `touch` gamepad layout). Server-safe; `lib/scores.ts` validates scores against `scoreStep`.
 - `index.ts`: client-only `ENGINES` registry. Both records are typed `Record<PlayableGameId, ...>`, so adding an id forces the other entries.
-- `components/engine-player.tsx` is the shared player (HUD, overlays, pause, touch → "REQUIERE TECLADO", score saving).
+- `components/engine-player.tsx` is the shared player (HUD, overlays, pause, skin picker, score saving). On touch devices it adds `.is-touch`, "TOCA PARA EMPEZAR", a fullscreen button and `components/touch-controls.tsx`: a per-game gamepad (`GAME_META.touch`) that sends synthetic `KeyboardEvent`s on `window` through `lib/touch-input.ts`, so engines only read keys (SPEC 18).
 - Game assets go in `public/games/<id>/`; original sources/assets for porting live in `references/started-games/` and `references/source-assets/`.
 
 ### UI references
